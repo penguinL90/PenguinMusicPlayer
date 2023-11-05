@@ -305,10 +305,7 @@
         <ListView x:Name="Listview" Background="#FFBFBFBF" Grid.Column="7" Grid.Row="1" Grid.RowSpan="7" ItemContainerStyle="{StaticResource ListViewItemStyle1}">
         </ListView>
         <Slider x:Name="VolumeBar" Grid.Column="1" Grid.ColumnSpan="5" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Center" Width="200" Style="{StaticResource SliderStyle1}" ValueChanged="Slider_ValueChanged" Maximum="1.0" Minimum="0.0" SmallChange="0.01" LargeChange="0.05"/>
-        <Image Grid.Column="2" Grid.ColumnSpan="3" HorizontalAlignment="Center" Height="126" VerticalAlignment="Center" Width="125" Grid.Row="1" Grid.RowSpan="3" Margin="0 0 0 0" Source="icons\recodericon.png" Stretch="Uniform" Visibility="Visible"/>
-
         <TextBlock x:Name="NowPlayTxt" FontSize="15" Foreground="#FFBFBFBF" FontFamily="Consolas" Grid.Column="1" HorizontalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="5" TextWrapping="Wrap" VerticalAlignment="Center"/>
-
         <TextBlock x:Name="VolumeValue" Foreground="#FFBFBFBF"  Grid.Column="5" HorizontalAlignment="Left" Margin="22,0,0,0" Grid.Row="7" TextWrapping="Wrap" FontSize="15" FontFamily="Consolas" VerticalAlignment="Center"/>
         <TextBlock Grid.Column="1" Foreground="#FFBFBFBF" HorizontalAlignment="Left" Margin="0,0,0,0" Grid.Row="7" TextWrapping="Wrap" VerticalAlignment="Center" Text="Volume" FontSize="15" FontFamily="Consolas"/>
         <Label Name="NowTime" FontSize="14" Foreground="#FFBFBFBF" FontFamily="Consolas" Width="71" Content="00:00:00" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Bottom" HorizontalContentAlignment="Left" Grid.Column="1"/>
