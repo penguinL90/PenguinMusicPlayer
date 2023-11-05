@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicApp"
         mc:Ignorable="d"
-        Title="Penguin's Music Player" Height="450" Width="800" ResizeMode="NoResize" Background="#FF595959" >
+        Title="Penguin's Music Player" Height="450" Width="800" ResizeMode="NoResize" Background="#FF595959">
     <Window.Resources>
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
@@ -299,10 +299,10 @@
         </Button>
         <Slider x:Name="TimeBar" Style="{DynamicResource SliderStyle1}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="5" AllowDrop="True" Margin="0, 3, 0, 0" Thumb.DragStarted="TimeBar_DragStarted" Thumb.DragCompleted="TimeBar_DragCompleted"/>
         <StackPanel Grid.Column="0" Grid.ColumnSpan="9" Orientation="Horizontal" Background="#FF404040">
-            <Button x:Name="AddAudio" Style="{DynamicResource ButtonStyle}" Content="Add Audio" FontFamily="Consolas" Padding="6" Margin="0, 3, 0, 3" Click="AddAudio_Click"/>
+            <Button x:Name="AddAudio" Style="{DynamicResource ButtonStyle}" Content="Add Audio" FontFamily="Consolas" Padding="6" Margin="3, 3, 0, 3" Click="AddAudio_Click"/>
         </StackPanel>
         <StatusBar x:Name="StatusBar" Foreground="#FFA6A6A6" Background="#FF404040" Grid.Column="0" Grid.ColumnSpan="9" Grid.Row="8" FontFamily="Consolas" FontSize="15"/>
-        <ListView x:Name="Listview" Background="#FFBFBFBF" Grid.Column="7" Grid.Row="1" Grid.RowSpan="7" ItemContainerStyle="{StaticResource ListViewItemStyle1}">
+        <ListView x:Name="Listview" Background="#FFBFBFBF" Grid.Column="7" Grid.Row="1" Grid.RowSpan="7" ItemContainerStyle="{StaticResource ListViewItemStyle1}" Margin="0 5 0 5">
         </ListView>
         <Slider x:Name="VolumeBar" Grid.Column="1" Grid.ColumnSpan="5" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Center" Width="200" Style="{StaticResource SliderStyle1}" ValueChanged="Slider_ValueChanged" Maximum="1.0" Minimum="0.0" SmallChange="0.01" LargeChange="0.05"/>
         <TextBlock x:Name="NowPlayTxt" FontSize="15" Foreground="#FFBFBFBF" FontFamily="Consolas" Grid.Column="1" HorizontalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="5" TextWrapping="Wrap" VerticalAlignment="Center"/>
