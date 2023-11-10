@@ -6,6 +6,11 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
+using System.Reflection;
+using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using NAudio.Dmo.Effect;
 
 namespace MusicApp
 {
@@ -16,6 +21,8 @@ namespace MusicApp
         private DispatcherTimer timer;
         private int TimeBarStart = 0;
         private int TimeBarEnd;
+        private BitmapImage pauseImg;
+        private BitmapImage playImg;
         public MainWindow()
         {
             InitializeComponent();
@@ -34,6 +41,25 @@ namespace MusicApp
             NowTime.Content = TimeSpan.Zero.ToString();
             this.KeyDown += new KeyEventHandler(Keydown);
             StatusBarUpdate("Ready.");
+            pauseImg = bitmapInit(@"\imgs\pause.png");
+            playImg = bitmapInit(@"\imgs\play.png");
+
+        }
+        private BitmapImage bitmapInit(string uri)
+        {
+            try
+            {
+                BitmapImage bitmapImage = new BitmapImage();
+                bitmapImage.BeginInit();
+                bitmapImage.UriSource = new Uri(uri, UriKind.Relative);
+                bitmapImage.DecodePixelWidth = 42;
+                bitmapImage.EndInit();
+                return bitmapImage;
+            }
+            catch(Exception e)
+            {
+                throw;
+            }
         }
         private void Keydown(object sender, KeyEventArgs e)
         {
@@ -58,9 +84,9 @@ namespace MusicApp
             if (willplay)
             {
                 player.PlayAndPause();
-                Control.Content = "Pause";
+                controlImg.Source = pauseImg;
             }
-            else Control.Content = "Play";
+            else controlImg.Source = playImg;
         }
 
         private void SliderTimerChange(object sender, EventArgs e)
@@ -122,13 +148,13 @@ namespace MusicApp
             player.PlayAndPause();
             if (player.Isplayed)
             {
-                Control.Content = "Pause";
+                controlImg.Source = pauseImg;
                 timer.Start();
                 StatusBarUpdate("Play.");
             }
             else
             {
-                Control.Content = "Play";
+                controlImg.Source = playImg;
                 timer.Stop();
                 StatusBarUpdate("Pause.");
             }
@@ -266,6 +292,14 @@ namespace MusicApp
         private void TimeBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
 
+        }
+
+        private void VersionInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string version = assembly.GetName().Version.ToString();
+
+            MessageBox.Show($"Version Number: {version}", "Version Info", MessageBoxButton.OK);
         }
     }
 }
