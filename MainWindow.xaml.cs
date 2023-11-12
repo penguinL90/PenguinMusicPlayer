@@ -8,9 +8,11 @@ using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Windows.Media.Imaging;
 using NAudio.Wave;
+using System.Runtime.Versioning;
 
 namespace MusicApp
 {
+    [SupportedOSPlatform("windows7.0")]
     public partial class MainWindow : Window
     {
         private Player player;
@@ -30,8 +32,8 @@ namespace MusicApp
             ControlButtonStatusChange(player.Playable);
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(250);
-            timer.Tick += new EventHandler(SliderTimerChange);
-            timer.Tick += new EventHandler(CheckAudioPlayEndOrNext);
+            timer.Tick += SliderTimerChange;
+            timer.Tick += CheckAudioPlayEndOrNext;
             VolumeBar.Value = player.Volume;
             NowPlayTxt.Text = "Nothing play yet";
             VolumeValue.Text = ((int)(player.Volume * 100)).ToString();
@@ -53,7 +55,7 @@ namespace MusicApp
                 bitmapImage.EndInit();
                 return bitmapImage;
             }
-            catch(Exception e)
+            catch
             {
                 throw;
             }
@@ -66,6 +68,7 @@ namespace MusicApp
         }
         private void GoToPlay(string path, bool willplay)
         {
+            timer.Stop();
             long timetick = player.ReadInAudio(path);
             if (timetick == -1)
             {
@@ -73,24 +76,26 @@ namespace MusicApp
                 StatusBarUpdate("The audio can't play.");
                 return;
             }
+            NowTime.Content = TimeSpan.Zero.ToString();
+            TimeBar.Value = 0;
             TimeBarEnd = (int)(timetick / player.BytePreSec);
             TimeBar.Maximum = TimeBarEnd;
             AllTime.Content = TimeSpan.FromSeconds(TimeBarEnd).ToString();
             ControlButtonStatusChange(player.Playable);
             NowPlayTxt.Text = player.Path.Split(@"\")[^1];
+            CheckFileListButtonStatus(player.Path);
             if (willplay)
             {
-                player.PlayAndPause();
-                controlImg.Source = playImg;
+                ControlPlay();
             }
             else controlImg.Source = pauseImg;
         }
-        private void SliderTimerChange(object sender, EventArgs e)
+        private void SliderTimerChange(object? sender, EventArgs e)
         {
             TimeBar.Value = player.NowTime.TotalSeconds;
             NowTime.Content = player.NowTime.ToString();
         }
-        private void CheckAudioPlayEndOrNext(object sender, EventArgs e)
+        private void CheckAudioPlayEndOrNext(object? sender, EventArgs e)
         {
             if (player.PlaybackState == PlaybackState.Stopped)
             {
@@ -105,8 +110,8 @@ namespace MusicApp
                 player.Stop();
                 ControlButtonStatusChange(player.Playable);
                 TimeBar.Value = 0;
-                NowPlayTxt.Text = "Everything has played.";
-                StatusBarUpdate("Everything has played.");
+                NowPlayTxt.Text = "Every audio is played.";
+                StatusBarUpdate("Every audio is played.");
                 NowTime.Content = TimeSpan.Zero.ToString();
                 AllTime.Content = TimeSpan.Zero.ToString();
                 timer.Stop();
@@ -129,10 +134,9 @@ namespace MusicApp
         }
         private void Backward_Click(object sender, RoutedEventArgs e)
         {
-            player.Jump(-10);
-            TimeBar.Value = player.NowTime.TotalSeconds;
-            NowTime.Content = player.NowTime.ToString();
-            StatusBarUpdate("Backward 10 seconds.");
+            player.Stop();
+            ControlButtonStatusChange(player.Playable);
+            GoToPlay(FileList[FileList.IndexOf(player.Path) - 1], true);
         }
         private void Control_Click(object sender, RoutedEventArgs e)
         {
@@ -156,10 +160,7 @@ namespace MusicApp
         }
         private void Forward_Click(object sender, RoutedEventArgs e)
         {
-            player.Jump(10);
-            TimeBar.Value = player.NowTime.TotalSeconds;
-            NowTime.Content = player.NowTime.ToString();
-            StatusBarUpdate("Forward 10 seconds.");
+            CheckAudioPlayEndOrNext();
         }
         private void AddAudio_Click(object sender, RoutedEventArgs e)
         {
@@ -181,6 +182,8 @@ namespace MusicApp
                 }
                 FileList.Add(ofd.FileName);
                 StatusBarUpdate($"Add file {ofd.FileName}");
+                ControlButtonStatusChange(player.Playable);
+                CheckFileListButtonStatus(player.Path);
             }
         }
         private void ListViewItem_MouseMove(object sender, MouseEventArgs e)
@@ -206,8 +209,8 @@ namespace MusicApp
                 ListViewItem sourcelistViewItem = (ListViewItem)e.Data.GetData("System.Windows.Controls.ListViewItem");
                 if (sourcelistViewItem == targetlistviewitem) return;
 
-                string targetitem = targetlistviewitem.Content.ToString();
-                string sourceitem = sourcelistViewItem.Content.ToString();
+                string targetitem = (string)targetlistviewitem.Content;
+                string sourceitem = (string)sourcelistViewItem.Content;
 
                 int targetindex = FileList.IndexOf(targetitem);
                 int sourceindex = FileList.IndexOf(sourceitem);
@@ -249,8 +252,8 @@ namespace MusicApp
             ListViewItem targetlistviewitem = (ListViewItem)sender;
             ListViewItem sourcelistViewItem = (ListViewItem)e.Data.GetData("System.Windows.Controls.ListViewItem");
 
-            string targetitem = targetlistviewitem.Content.ToString();
-            string sourceitem = sourcelistViewItem.Content.ToString();
+            string targetitem = (string)targetlistviewitem.Content;
+            string sourceitem = (string)sourcelistViewItem.Content;
 
             int targetindex = FileList.IndexOf(targetitem);
             int sourceindex = FileList.IndexOf(sourceitem);
@@ -267,8 +270,8 @@ namespace MusicApp
         {
             player.Stop();
             ListViewItem item = (ListViewItem)sender;
-            string itemName = item.Content.ToString();
-            GoToPlay(itemName, false);
+            string itemName = (string)item.Content;
+            GoToPlay(itemName, true);
         }
         private void TimeBar_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
@@ -300,10 +303,6 @@ namespace MusicApp
                 StatusBar.Items.Add(message);
             }
         }
-        private void TimeBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-
-        }
         private void VersionInfo_Click(object sender, RoutedEventArgs e)
         {
             Window window = new VersionWindows();
@@ -312,7 +311,6 @@ namespace MusicApp
             window.Top = this.Top + this.Height / 2 - window.Height / 2;
             window.ShowDialog();
         }
-
         private void TimeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             Slider bar = (Slider)sender;
@@ -334,6 +332,24 @@ namespace MusicApp
                 else if (bar.Name == "VolumeBar")
                 {
                     bar.Value = timePos;
+                }
+            }
+        }
+        private void CheckFileListButtonStatus(string? path)
+        {
+            if (FileList.Count < 1)
+            {
+                Backward.IsEnabled = false;
+                Forward.IsEnabled = false;
+                return;
+            }
+            if (path != null)
+            {
+                int _index = FileList.IndexOf(path);
+                if (_index == 0)
+                {
+                    Backward.IsEnabled = false;
+                    return;
                 }
             }
         }

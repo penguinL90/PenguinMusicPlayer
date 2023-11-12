@@ -1,8 +1,11 @@
 ﻿using NAudio.Wave;
 using System;
-
+using System.Reflection;
+using System.Runtime.Versioning;
 namespace MusicApp
 {
+
+    [SupportedOSPlatform("windows7.0")]
     class Player
     {
         private WaveOutEvent _player;

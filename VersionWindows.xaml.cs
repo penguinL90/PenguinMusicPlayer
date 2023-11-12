@@ -24,7 +24,7 @@ namespace MusicApp
         {
             InitializeComponent();
             Assembly assembly = Assembly.GetExecutingAssembly();
-            Version.Text = "Version: " + assembly.GetName().Version.ToString();
+            Version.Text = "Version: " + assembly.GetName().Version;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

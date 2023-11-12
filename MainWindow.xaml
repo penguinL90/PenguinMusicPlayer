@@ -5,7 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicApp"
         mc:Ignorable="d"
-        Title="Penguin's Music Player" Height="450" Width="800" ResizeMode="NoResize" Background="#FF595959" Icon="/imgs/icon.png">
+        Title="Penguin's Music Player"
+        Height="450" 
+        Width="800" 
+        ResizeMode="NoResize" 
+        Background="#FF595959" 
+        Icon="/imgs/icon.png">
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -16,36 +21,111 @@
             <ColumnDefinition Width="0.5*"/>
             <ColumnDefinition Width="0.5*"/>
             <ColumnDefinition Width="0.3*"/>
-            <ColumnDefinition Width="3*" x:Name="ListLine"/>
+            <ColumnDefinition Width="3*" 
+                              x:Name="ListLine"/>
             <ColumnDefinition Width="0.5*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.3*"/>
             <RowDefinition/>
-            <RowDefinition Height="0.4*" x:Name="NowPlayLine"/>
+            <RowDefinition Height="0.4*" 
+                           x:Name="NowPlayLine"/>
             <RowDefinition Height="0.5*"/>
-            <RowDefinition Height="0.2*" x:Name="PlayBarLine"/>
+            <RowDefinition Height="0.2*" 
+                           x:Name="PlayBarLine"/>
             <RowDefinition Height="0.2*"/>
-            <RowDefinition Height="0.4*" x:Name="ButtonLine"/>
+            <RowDefinition Height="0.4*" 
+                           x:Name="ButtonLine"/>
             <RowDefinition Height="0.5*"/>
-            <RowDefinition Height="0.3*" x:Name="StatusLine"/>
+            <RowDefinition Height="0.3*" 
+                           x:Name="StatusLine"/>
         </Grid.RowDefinitions>
-        <Button Style="{DynamicResource ButtonStyle}" x:Name="Backward" Grid.Column="2" Grid.Row="6" Height="42" Width="42" Click="Backward_Click" Padding="5">
-            <Image VerticalAlignment="Center" HorizontalAlignment="Center" Source="\imgs\previous.png" Visibility="Visible"/>
+        <Button Style="{DynamicResource ButtonStyle}" 
+                x:Name="Backward" 
+                Grid.Column="2" 
+                Grid.Row="6" 
+                Height="42" 
+                Width="42" 
+                Click="Backward_Click" 
+                Padding="5">
+            <Image VerticalAlignment="Center" 
+                   HorizontalAlignment="Center" 
+                   Source="\imgs\previous.png" 
+                   Visibility="Visible"/>
         </Button>
-        <Button Style="{DynamicResource ButtonStyle}" x:Name="Control" Grid.Column="3" Grid.Row="6" Height="42" Width="42" Click="Control_Click" Padding="5">
-            <Image x:Name="controlImg" VerticalAlignment="Center" HorizontalAlignment="Center" Source="\imgs\play.png" Visibility="Visible"/>
+        <Button Style="{DynamicResource ButtonStyle}" 
+                x:Name="Control" 
+                Grid.Column="3" 
+                Grid.Row="6" 
+                Height="42" 
+                Width="42" 
+                Click="Control_Click" 
+                Padding="5">
+            <Image x:Name="controlImg" 
+                   VerticalAlignment="Center" 
+                   HorizontalAlignment="Center" 
+                   Source="\imgs\play.png" 
+                   Visibility="Visible"/>
         </Button>
-        <Button Style="{DynamicResource ButtonStyle}" x:Name="Forward" Grid.Column="4" Grid.Row="6" Height="42" Width="42" Click="Forward_Click" Padding="5">
-            <Image VerticalAlignment="Center" HorizontalAlignment="Center" Source="\imgs\next.png" Visibility="Visible"/>
+        <Button Style="{DynamicResource ButtonStyle}" 
+                x:Name="Forward"
+                Grid.Column="4" 
+                Grid.Row="6" 
+                Height="42" 
+                Width="42" 
+                Click="Forward_Click" 
+                Padding="5">
+            <Image VerticalAlignment="Center" 
+                   HorizontalAlignment="Center" 
+                   Source="\imgs\next.png" 
+                   Visibility="Visible"/>
         </Button>
-        <Slider x:Name="TimeBar" Style="{DynamicResource SliderStyle}" HorizontalAlignment="Center" Width="290" VerticalAlignment="Center"  Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="5" AllowDrop="True" Margin="0, 3, 0, 0" Thumb.DragStarted="TimeBar_DragStarted" Thumb.DragCompleted="TimeBar_DragCompleted" ValueChanged="TimeBar_ValueChanged" PreviewMouseLeftButtonDown="TimeBar_MouseLeftButtonDown"/>
-        <StackPanel Grid.Column="0" Grid.ColumnSpan="9" Orientation="Horizontal" Background="#FF404040">
-            <Button x:Name="AddAudio" Style="{DynamicResource ButtonStyle}" Content="Add Audio" FontFamily="Consolas" Padding="6" Margin="3, 3, 0, 3" Click="AddAudio_Click"/>
-            <Button x:Name="VersionInfo" Style="{DynamicResource ButtonStyle}" Content="Version Info" FontFamily="Consolas" Padding="6" Margin="3, 3, 0, 3" Click="VersionInfo_Click"/>
+        <Slider x:Name="TimeBar" 
+                Style="{DynamicResource SliderStyle}" 
+                HorizontalAlignment="Center" 
+                Width="290" 
+                VerticalAlignment="Center"  
+                Grid.Row="4" 
+                Grid.Column="1" 
+                Grid.ColumnSpan="5" 
+                AllowDrop="True" 
+                Margin="0, 3, 0, 0" 
+                Thumb.DragStarted="TimeBar_DragStarted" 
+                Thumb.DragCompleted="TimeBar_DragCompleted" 
+                PreviewMouseLeftButtonDown="TimeBar_MouseLeftButtonDown"/>
+        <StackPanel Grid.Column="0" 
+                    Grid.ColumnSpan="9" 
+                    Orientation="Horizontal" 
+                    Background="#FF404040">
+            <Button x:Name="AddAudio" 
+                    Style="{DynamicResource ButtonStyle}" 
+                    Content="Add Audio" FontFamily="Consolas" 
+                    Padding="6" 
+                    Margin="3, 3, 0, 3" 
+                    Click="AddAudio_Click"/>
+            <Button x:Name="VersionInfo" 
+                    Style="{DynamicResource ButtonStyle}" 
+                    Content="Version Info" 
+                    FontFamily="Consolas" 
+                    Padding="6" 
+                    Margin="3, 3, 0, 3" 
+                    Click="VersionInfo_Click"/>
         </StackPanel>
-        <StatusBar x:Name="StatusBar" Foreground="#FFA6A6A6" Background="#FF404040" Grid.Column="0" Grid.ColumnSpan="9" Grid.Row="8" FontFamily="Consolas" FontSize="15"/>
-        <ListView x:Name="Listview" Background="#FFBFBFBF" Grid.Column="7" Grid.Row="1" Grid.RowSpan="7" Margin="0 5 0 5">
+        <StatusBar x:Name="StatusBar" 
+                   Foreground="#FFA6A6A6" 
+                   Background="#FF404040" 
+                   Grid.Column="0" 
+                   Grid.ColumnSpan="9" 
+                   Grid.Row="8" 
+                   FontFamily="Consolas" 
+                   FontSize="15"/>
+        <ListView x:Name="Listview" 
+                  Background="#FFBFBFBF" 
+                  Grid.Column="7" 
+                  Grid.Row="1" 
+                  Grid.RowSpan="7" 
+                  Margin="0 5 0 5"
+                  ScrollViewer.CanContentScroll="False">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemStyle1}">
                     <EventSetter Event="MouseMove" Handler="ListViewItem_MouseMove"/>
@@ -56,13 +136,86 @@
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
-        <Slider x:Name="VolumeBar" Grid.Column="1" Grid.ColumnSpan="5" HorizontalAlignment="Center" Grid.Row="7" VerticalAlignment="Center" Width="200" Style="{StaticResource SliderStyle}" ValueChanged="Slider_ValueChanged" Maximum="1.0" Minimum="0.0" SmallChange="0.01" LargeChange="0.05" PreviewMouseLeftButtonDown="TimeBar_MouseLeftButtonDown"/>
-        <TextBlock x:Name="NowPlayTxt" FontSize="15" Foreground="#FFBFBFBF" FontFamily="Consolas" Grid.Column="1" HorizontalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="5" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock x:Name="VolumeValue" Foreground="#FFBFBFBF"  Grid.Column="5" HorizontalAlignment="Left" Margin="22,0,0,0" Grid.Row="7" TextWrapping="Wrap" FontSize="15" FontFamily="Consolas" VerticalAlignment="Center"/>
-        <TextBlock Grid.Column="1" Foreground="#FFBFBFBF" HorizontalAlignment="Left" Margin="-10,0,0,2" Grid.Row="7" TextWrapping="Wrap" VerticalAlignment="Center" Text="Volume" FontSize="15" FontFamily="Consolas"/>
-        <Label Name="NowTime" FontSize="13" Foreground="#FFBFBFBF" FontFamily="Consolas" Width="71" Content="00:00:00" HorizontalAlignment="Left" Grid.Row="3" VerticalAlignment="Bottom" HorizontalContentAlignment="Left" Grid.Column="1" Margin="-3 0 -2 0"/>
-        <Label Name="AllTime" Content="00:00:00" Grid.Column="5" FontFamily="Consolas" Foreground="#FFBFBFBF" FontSize="13" HorizontalAlignment="Right" Grid.Row="3" VerticalAlignment="Bottom" HorizontalContentAlignment="Right" Margin="-3 0 -5 0"/>
-        <Image Source="\imgs\recorder.png" Grid.Row="1" Grid.RowSpan="3" Grid.Column="2" Grid.ColumnSpan="3" Height="125" Width="125" Margin="0 0 0 50" Visibility="Visible"/>
-        <Label x:Name="c1" Content="Label" HorizontalAlignment="Stretch" Grid.Row="2" VerticalAlignment="Center"/>
+        <Slider x:Name="VolumeBar" 
+                Grid.Column="1" 
+                Grid.ColumnSpan="5" 
+                HorizontalAlignment="Center" 
+                Grid.Row="7" 
+                VerticalAlignment="Center" 
+                Width="200" 
+                Style="{StaticResource SliderStyle}" 
+                ValueChanged="Slider_ValueChanged" 
+                Maximum="1.0" 
+                Minimum="0.0" 
+                SmallChange="0.01" 
+                LargeChange="0.05" 
+                PreviewMouseLeftButtonDown="TimeBar_MouseLeftButtonDown"/>
+        <TextBlock x:Name="NowPlayTxt" 
+                   FontSize="15" 
+                   Foreground="#FFBFBFBF" 
+                   FontFamily="Consolas" 
+                   Grid.Column="1" 
+                   HorizontalAlignment="Center" 
+                   Grid.Row="3" 
+                   Grid.ColumnSpan="5" 
+                   TextWrapping="Wrap" 
+                   VerticalAlignment="Top"/>
+        <TextBlock x:Name="VolumeValue" 
+                   Foreground="#FFBFBFBF"  
+                   Grid.Column="5" HorizontalAlignment="Left" 
+                   Margin="22,0,0,0" 
+                   Grid.Row="7" 
+                   TextWrapping="Wrap" 
+                   FontSize="15" 
+                   FontFamily="Consolas" 
+                   VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="1" 
+                   Foreground="#FFBFBFBF" 
+                   HorizontalAlignment="Left" 
+                   Margin="-10,0,0,2" 
+                   Grid.Row="7" 
+                   TextWrapping="Wrap" 
+                   VerticalAlignment="Center" 
+                   Text="Volume" 
+                   FontSize="15" 
+                   FontFamily="Consolas"/>
+        <Label Name="NowTime" 
+               FontSize="13" 
+               Foreground="#FFBFBFBF" 
+               FontFamily="Consolas" 
+               Width="71" 
+               Content="00:00:00" 
+               HorizontalAlignment="Left" 
+               Grid.Row="3" 
+               VerticalAlignment="Bottom" 
+               HorizontalContentAlignment="Left" 
+               Grid.Column="1" 
+               Margin="-3 0 -2 0"/>
+        <Label Name="AllTime" 
+               Content="00:00:00" 
+               Grid.Column="5" 
+               FontFamily="Consolas"
+               Foreground="#FFBFBFBF" 
+               FontSize="13" 
+               HorizontalAlignment="Right" 
+               Grid.Row="3" 
+               VerticalAlignment="Bottom" 
+               HorizontalContentAlignment="Right" 
+               Margin="-3 0 -5 0"/>
+        <Image Source="\imgs\recorder.png" 
+               Grid.Row="1" 
+               Grid.RowSpan="3" 
+               Grid.Column="2" 
+               Grid.ColumnSpan="3" 
+               Height="125"
+               Width="125" 
+               Margin="0 0 0 50"
+               Visibility="Visible"/>
+        <Label x:Name="c1" 
+               Content="Label" 
+               HorizontalAlignment="Stretch" 
+               Grid.Row="2" 
+               VerticalAlignment="Center"
+               Visibility="Hidden"/>
     </Grid>
 </Window>
