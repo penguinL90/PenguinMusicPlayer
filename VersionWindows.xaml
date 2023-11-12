@@ -10,11 +10,12 @@
         <Grid.ColumnDefinitions>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.5*"/>
             <RowDefinition Height="2*"/>
+            <RowDefinition Height="0.6*"/>
             <RowDefinition Height="0.8*"/>
             <RowDefinition Height="0.2*"/>
         </Grid.RowDefinitions>
+        <Image Source="/imgs/icon.png" Height="80" Visibility="Visible"/>
         <TextBlock x:Name="Version" FontSize="15" FontFamily="Consolas" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Version: 0.0.0.0000" Foreground="#FFA6A6A6"/>
         <Button Style="{DynamicResource ButtonStyle}" Grid.Row="2" Width="75" FontFamily="Consolas" FontSize="15" Content="Close" Click="Button_Click"/>
     </Grid>

@@ -15,6 +15,9 @@
 
   <ItemGroup>
     <Page Remove="SliderTemplate.xaml" />
+    <Resource Include="imgs\icon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="imgs\next.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>

@@ -102,7 +102,7 @@ namespace MusicApp
         }
         public void Stop()
         {
-            if (_isplayed && _playable)
+            if (_playable)
             {
                 _player.Stop();
                 _isplayed = false;
@@ -145,6 +145,10 @@ namespace MusicApp
             {
                 _filereader.Position = tick;
             }
+        }
+        public PlaybackState PlaybackState
+        {
+            get { return _player.PlaybackState; }
         }
     }
 }

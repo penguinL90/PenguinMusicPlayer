@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿ <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <SolidColorBrush x:Key="SliderThumb.Static.Background" Color="Gray"/>
@@ -14,10 +14,8 @@
             <Trigger Property="IsEnabled" Value="False">
                 <Setter TargetName="ellipse" Property="Fill" Value="{StaticResource SliderThumb.Disabled.Background}"/>
             </Trigger>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="ellipse" Property="Width" Value="12"/>
-                <Setter TargetName="ellipse" Property="Height" Value="12"/>
-                <Setter TargetName="ellipse" Property="Fill" Value="{StaticResource SliderThumb.MouseOver.Background}"/>
+            <Trigger Property="Width" Value="14">
+                <Setter TargetName="ellipse" Property="Fill" Value="DarkCyan"/>
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -51,11 +49,11 @@
     </Style>
     <ControlTemplate x:Key="SliderHorizontal" TargetType="{x:Type Slider}">
         <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
-            <Grid>
+            <Grid VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition MinHeight="{TemplateBinding MinHeight}"/>
-                    <RowDefinition/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*" MinHeight="{TemplateBinding MinHeight}"/>
+                    <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
                 <Border x:Name="TrackBackground" Background="{StaticResource SliderThumb.Track.Background}" BorderBrush="{StaticResource SliderThumb.Track.Border}" BorderThickness="0" CornerRadius="5" Height="9" Margin="0 0" Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="center">
                     <Canvas Margin="-6,-1">
@@ -64,10 +62,10 @@
                 </Border>
                 <Track x:Name="PART_Track" Grid.Row="0" Grid.RowSpan="3">
                     <Track.DecreaseRepeatButton>
-                        <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Height="9" Style="{StaticResource RepeatButtonDarkCyan}" VerticalAlignment="Center"/>
+                        <RepeatButton Height="9" Style="{StaticResource RepeatButtonDarkCyan}" VerticalAlignment="Center"/>
                     </Track.DecreaseRepeatButton>
                     <Track.IncreaseRepeatButton>
-                        <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Height="9" Style="{StaticResource RepeatButtonTransparent}" VerticalAlignment="Center"/>
+                        <RepeatButton Height="9" Style="{StaticResource RepeatButtonTransparent}" VerticalAlignment="Center"/>
                     </Track.IncreaseRepeatButton>
                     <Track.Thumb>
                         <Thumb x:Name="Thumb" Focusable="False" Height="9" Width="9" OverridesDefaultStyle="True" Template="{StaticResource SliderThumbHorizontalDefault}" VerticalAlignment="Center"/>
@@ -76,6 +74,10 @@
             </Grid>
         </Border>
         <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Thumb" Property="Width" Value="14"/>
+                <Setter TargetName="Thumb" Property="Height" Value="14"/>
+            </Trigger>
             <Trigger Property="IsSelectionRangeEnabled" Value="true">
                 <Setter Property="Visibility" TargetName="PART_SelectionRange" Value="Visible"/>
             </Trigger>

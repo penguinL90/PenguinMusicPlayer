@@ -6,11 +6,8 @@ using System.Windows.Shapes;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.Windows.Threading;
-using System.Reflection;
-using System.Windows.Data;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using NAudio.Dmo.Effect;
+using NAudio.Wave;
 
 namespace MusicApp
 {
@@ -23,6 +20,7 @@ namespace MusicApp
         private int TimeBarEnd;
         private BitmapImage pauseImg;
         private BitmapImage playImg;
+        private bool Oritimerstatus;
         public MainWindow()
         {
             InitializeComponent();
@@ -43,7 +41,6 @@ namespace MusicApp
             StatusBarUpdate("Ready.");
             pauseImg = bitmapInit(@"\imgs\pause.png");
             playImg = bitmapInit(@"\imgs\play.png");
-
         }
         private BitmapImage bitmapInit(string uri)
         {
@@ -88,7 +85,6 @@ namespace MusicApp
             }
             else controlImg.Source = pauseImg;
         }
-
         private void SliderTimerChange(object sender, EventArgs e)
         {
             TimeBar.Value = player.NowTime.TotalSeconds;
@@ -96,7 +92,7 @@ namespace MusicApp
         }
         private void CheckAudioPlayEndOrNext(object sender, EventArgs e)
         {
-            if (player.NowTimeTick >= player.TotalBytes - (player.BytePreSec / 10))
+            if (player.PlaybackState == PlaybackState.Stopped)
             {
                 CheckAudioPlayEndOrNext();
             }
@@ -107,19 +103,18 @@ namespace MusicApp
             if (index == FileList.Count - 1)
             {
                 player.Stop();
-                FileList.Remove(player.Path);
                 ControlButtonStatusChange(player.Playable);
                 TimeBar.Value = 0;
                 NowPlayTxt.Text = "Everything has played.";
                 StatusBarUpdate("Everything has played.");
                 NowTime.Content = TimeSpan.Zero.ToString();
+                AllTime.Content = TimeSpan.Zero.ToString();
                 timer.Stop();
             }
             else
             {
                 player.Stop();
                 string _path = FileList[index + 1];
-                FileList.Remove(player.Path);
                 index++;
                 GoToPlay(_path, true);
                 StatusBarUpdate("Next audio");
@@ -176,7 +171,16 @@ namespace MusicApp
             bool? result = ofd.ShowDialog();
             if (result == true)
             {
+                foreach (var item in FileList)
+                {
+                    if (ofd.FileName == item)
+                    {
+                        StatusBarUpdate("This audio file is already in the list.");
+                        return;
+                    }
+                }
                 FileList.Add(ofd.FileName);
+                StatusBarUpdate($"Add file {ofd.FileName}");
             }
         }
         private void ListViewItem_MouseMove(object sender, MouseEventArgs e)
@@ -268,12 +272,20 @@ namespace MusicApp
         }
         private void TimeBar_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
-            timer.Stop();
+            if (timer.IsEnabled)
+            {
+                timer.Stop();
+                Oritimerstatus = true;
+            }
+            else Oritimerstatus = false;
         }
         private void TimeBar_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             player.Set((long)TimeBar.Value * player.BytePreSec);
-            timer.Start();
+            if (Oritimerstatus)
+            {
+                timer.Start();
+            }
         }
         private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
@@ -288,12 +300,10 @@ namespace MusicApp
                 StatusBar.Items.Add(message);
             }
         }
-
         private void TimeBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
 
         }
-
         private void VersionInfo_Click(object sender, RoutedEventArgs e)
         {
             Window window = new VersionWindows();
@@ -301,6 +311,31 @@ namespace MusicApp
             window.Left = this.Left + this.Width / 2 - window.Width / 2;
             window.Top = this.Top + this.Height / 2 - window.Height / 2;
             window.ShowDialog();
+        }
+
+        private void TimeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Slider bar = (Slider)sender;
+            double barWidth = bar.ActualWidth;
+            double mousePosX = e.GetPosition(bar).X;
+            double timePos = (mousePosX / barWidth);
+            double barPos = (bar.Value / bar.Maximum);
+            double Tolerance = 7 / barWidth;
+            if (mousePosX >= 0 && mousePosX <= barWidth && Math.Abs(timePos - barPos) > Tolerance)
+            {
+
+                if (bar.Name == "TimeBar")
+                {
+                    long timePosLong = (long)(timePos * player.TotalBytes);
+                    player.Set(timePosLong);
+                    TimeBar.Value = player.NowTime.TotalSeconds;
+                    NowTime.Content = player.NowTime.ToString();
+                }
+                else if (bar.Name == "VolumeBar")
+                {
+                    bar.Value = timePos;
+                }
+            }
         }
     }
 }
