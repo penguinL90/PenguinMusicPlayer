@@ -84,9 +84,9 @@ namespace MusicApp
             if (willplay)
             {
                 player.PlayAndPause();
-                controlImg.Source = pauseImg;
+                controlImg.Source = playImg;
             }
-            else controlImg.Source = playImg;
+            else controlImg.Source = pauseImg;
         }
 
         private void SliderTimerChange(object sender, EventArgs e)
@@ -148,13 +148,13 @@ namespace MusicApp
             player.PlayAndPause();
             if (player.Isplayed)
             {
-                controlImg.Source = pauseImg;
+                controlImg.Source = playImg;
                 timer.Start();
                 StatusBarUpdate("Play.");
             }
             else
             {
-                controlImg.Source = playImg;
+                controlImg.Source = pauseImg;
                 timer.Stop();
                 StatusBarUpdate("Pause.");
             }
@@ -296,10 +296,11 @@ namespace MusicApp
 
         private void VersionInfo_Click(object sender, RoutedEventArgs e)
         {
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string version = assembly.GetName().Version.ToString();
-
-            MessageBox.Show($"Version Number: {version}", "Version Info", MessageBoxButton.OK);
+            Window window = new VersionWindows();
+            window.WindowStartupLocation = WindowStartupLocation.Manual;
+            window.Left = this.Left + this.Width / 2 - window.Width / 2;
+            window.Top = this.Top + this.Height / 2 - window.Height / 2;
+            window.ShowDialog();
         }
     }
 }
