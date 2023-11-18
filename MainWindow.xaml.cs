@@ -9,6 +9,9 @@ using System.Windows.Threading;
 using System.Windows.Media.Imaging;
 using NAudio.Wave;
 using System.Runtime.Versioning;
+using System.Windows.Media;
+using System.Windows.Data;
+using System.IO;
 
 namespace MusicApp
 {
@@ -16,16 +19,61 @@ namespace MusicApp
     public partial class MainWindow : Window
     {
         private Player player;
-        public ObservableCollection<string> FileList;
+        public fileList FileList;
         private DispatcherTimer timer;
         private int TimeBarStart = 0;
         private int TimeBarEnd;
         private BitmapImage pauseImg;
         private BitmapImage playImg;
         private bool Oritimerstatus;
+        public readonly struct Path
+        {
+            public string ShortPath { get; init; }
+            public string FullPath { get; init; }
+            public Path(string shortpath, string fullpath)
+            {
+                ShortPath = shortpath;
+                FullPath = fullpath;
+            }
+            public override string ToString()
+            {
+                return ShortPath;
+            }
+        }
+        public class fileList: ObservableCollection<Path>
+        {
+            public fileList() : base() { }
+            public int FindFullPathIndex(string fullpath)
+            {
+                int _count = 0;
+                foreach (var item in this)
+                {
+                    if (item.FullPath == fullpath)
+                    {
+                        return _count;
+                    }
+                    _count++;
+                }
+                return -1;
+            }
+            public int FindShortPathIndex(string shortpath)
+            {
+                int _count = 0;
+                foreach (var item in this)
+                {
+                    if (item.ShortPath == shortpath)
+                    {
+                        return _count;
+                    }
+                    _count++;
+                }
+                return -1;
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
             player = new Player();
             FileList = new();
             Listview.ItemsSource = FileList;
@@ -69,6 +117,8 @@ namespace MusicApp
         private void GoToPlay(string path, bool willplay)
         {
             timer.Stop();
+
+            string previoudPath = player.Path;
             long timetick = player.ReadInAudio(path);
             if (timetick == -1)
             {
@@ -76,13 +126,29 @@ namespace MusicApp
                 StatusBarUpdate("The audio can't play.");
                 return;
             }
-            NowTime.Content = TimeSpan.Zero.ToString();
+            int previousIndex;
+            if (previoudPath == String.Empty)
+            {
+                previousIndex = -1;
+            }
+            else
+            {
+                previousIndex = FileList.FindFullPathIndex(previoudPath);
+            }
+
+
             TimeBar.Value = 0;
             TimeBarEnd = (int)(timetick / player.BytePreSec);
             TimeBar.Maximum = TimeBarEnd;
+
+            int index = FileList.FindFullPathIndex(path);
+            ListViewColorChanged(previousIndex, index);
+
+            NowTime.Content = TimeSpan.Zero.ToString();
             AllTime.Content = TimeSpan.FromSeconds(TimeBarEnd).ToString();
-            ControlButtonStatusChange(player.Playable);
             NowPlayTxt.Text = player.Path.Split(@"\")[^1];
+
+            ControlButtonStatusChange(player.Playable);
             CheckFileListButtonStatus(player.Path);
             if (willplay)
             {
@@ -104,10 +170,11 @@ namespace MusicApp
         }
         private void CheckAudioPlayEndOrNext()
         {
-            int index = FileList.IndexOf(player.Path);
+            int index = FileList.FindFullPathIndex(player.Path);
             if (index == FileList.Count - 1)
             {
                 player.Stop();
+                ListViewColorChanged(index, -1);
                 ControlButtonStatusChange(player.Playable);
                 TimeBar.Value = 0;
                 NowPlayTxt.Text = "Every audio is played.";
@@ -119,7 +186,7 @@ namespace MusicApp
             else
             {
                 player.Stop();
-                string _path = FileList[index + 1];
+                string _path = FileList[index + 1].FullPath;
                 index++;
                 GoToPlay(_path, true);
                 StatusBarUpdate("Next audio");
@@ -136,7 +203,7 @@ namespace MusicApp
         {
             player.Stop();
             ControlButtonStatusChange(player.Playable);
-            GoToPlay(FileList[FileList.IndexOf(player.Path) - 1], true);
+            GoToPlay(FileList[FileList.FindFullPathIndex(player.Path) - 1].FullPath, true);
         }
         private void Control_Click(object sender, RoutedEventArgs e)
         {
@@ -174,13 +241,14 @@ namespace MusicApp
             {
                 foreach (var item in FileList)
                 {
-                    if (ofd.FileName == item)
+                    if (ofd.FileName == item.FullPath)
                     {
                         StatusBarUpdate("This audio file is already in the list.");
                         return;
                     }
                 }
-                FileList.Add(ofd.FileName);
+                Path path = new(ofd.FileName.Split(@"\")[^1], ofd.FileName);
+                FileList.Add(path);
                 StatusBarUpdate($"Add file {ofd.FileName}");
                 ControlButtonStatusChange(player.Playable);
                 CheckFileListButtonStatus(player.Path);
@@ -201,68 +269,16 @@ namespace MusicApp
                 }
             }
         }
-        private void ListViewItem_DragEnter(object sender, DragEventArgs e)
-        {
-            try
-            {
-                ListViewItem targetlistviewitem = (ListViewItem)sender;
-                ListViewItem sourcelistViewItem = (ListViewItem)e.Data.GetData("System.Windows.Controls.ListViewItem");
-                if (sourcelistViewItem == targetlistviewitem) return;
-
-                string targetitem = (string)targetlistviewitem.Content;
-                string sourceitem = (string)sourcelistViewItem.Content;
-
-                int targetindex = FileList.IndexOf(targetitem);
-                int sourceindex = FileList.IndexOf(sourceitem);
-
-                Rectangle toprec = (Rectangle)targetlistviewitem.Template.FindName("toprec", targetlistviewitem);
-                Rectangle botrec = (Rectangle)targetlistviewitem.Template.FindName("toprec", targetlistviewitem);
-
-                if (targetindex < sourceindex)
-                {
-                    botrec.Visibility = Visibility.Visible;
-                }
-                else if (sourceindex < targetindex)
-                {
-                    toprec.Visibility = Visibility.Visible;
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-        private void ListViewItem_DragLeave(object sender, DragEventArgs e)
-        {
-            try
-            {
-                ListViewItem targetitem = (ListViewItem)sender;
-                Rectangle toprec = (Rectangle)targetitem.Template.FindName("toprec", targetitem);
-                Rectangle botrec = (Rectangle)targetitem.Template.FindName("botrec", targetitem);
-                toprec.Visibility = Visibility.Collapsed;
-                botrec.Visibility = Visibility.Collapsed;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
         private void ListViewItem_Drop(object sender, DragEventArgs e)
         {
             ListViewItem targetlistviewitem = (ListViewItem)sender;
             ListViewItem sourcelistViewItem = (ListViewItem)e.Data.GetData("System.Windows.Controls.ListViewItem");
 
-            string targetitem = (string)targetlistviewitem.Content;
-            string sourceitem = (string)sourcelistViewItem.Content;
+            string targetitemfull = ((Path)targetlistviewitem.Content).FullPath;
+            string sourceitemfull = ((Path)sourcelistViewItem.Content).FullPath;
 
-            int targetindex = FileList.IndexOf(targetitem);
-            int sourceindex = FileList.IndexOf(sourceitem);
-
-            Rectangle toprec = (Rectangle)targetlistviewitem.Template.FindName("toprec", targetlistviewitem);
-            Rectangle botrec = (Rectangle)targetlistviewitem.Template.FindName("toprec", targetlistviewitem);
-
-            toprec.Visibility = Visibility.Collapsed;
-            botrec.Visibility = Visibility.Collapsed;
+            int targetindex = FileList.FindFullPathIndex(targetitemfull);
+            int sourceindex = FileList.FindFullPathIndex(sourceitemfull);
 
             FileList.Move(targetindex, sourceindex);
         }
@@ -270,7 +286,7 @@ namespace MusicApp
         {
             player.Stop();
             ListViewItem item = (ListViewItem)sender;
-            string itemName = (string)item.Content;
+            string itemName = ((Path)item.Content).FullPath;
             GoToPlay(itemName, true);
         }
         private void TimeBar_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
@@ -345,12 +361,87 @@ namespace MusicApp
             }
             if (path != null)
             {
-                int _index = FileList.IndexOf(path);
+                int _index = FileList.FindFullPathIndex(path);
                 if (_index == 0)
                 {
                     Backward.IsEnabled = false;
                     return;
                 }
+            }
+        }
+        private void ListViewColorChanged(int previousIndex, int index)
+        {
+            if (index == -1)
+            {
+                ListViewItem listViewItemPre = (ListViewItem)Listview.ItemContainerGenerator.ContainerFromIndex(previousIndex);
+                Border borderPre = (Border)listViewItemPre.Template.FindName("border", listViewItemPre);
+                borderPre.SetBinding(BackgroundProperty, new Binding { RelativeSource = RelativeSource.TemplatedParent, Path = new PropertyPath("Background") });
+                return;
+            }
+            if (previousIndex != -1)
+            {
+                ListViewItem listViewItemPre = (ListViewItem)Listview.ItemContainerGenerator.ContainerFromIndex(previousIndex);
+                Border borderPre = (Border)listViewItemPre.Template.FindName("border", listViewItemPre);
+                borderPre.SetBinding(BackgroundProperty, new Binding { RelativeSource = RelativeSource.TemplatedParent, Path = new PropertyPath("Background") });
+            }
+            ListViewItem listViewItem = (ListViewItem)Listview.ItemContainerGenerator.ContainerFromIndex(index);
+            Border border = (Border)listViewItem.Template.FindName("border", listViewItem);
+            border.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFAAAAAA"));
+        }
+        private ListViewItem listViewItem;
+        private void ListViewItem_MouseEnter(object sender, MouseEventArgs e)
+        {
+            deleteFile.Visibility = Visibility.Visible;
+            listViewItem = (ListViewItem)sender;
+            Border bd = (Border)listViewItem.Template.FindName("border", listViewItem);
+            double delPosY = listViewItem.TranslatePoint(new Point(0, 0), Listview).Y + 32;
+            deleteFile.Margin = new Thickness(0, delPosY, 5, 0);
+            if (((Path)listViewItem.Content).FullPath != player.Path)
+            {
+                bd.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFA6A6A6"));
+            }
+        }
+        private void ListViewItem_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (!deleteFile.IsMouseOver)
+            {
+                listViewItem = (ListViewItem)sender;
+                Border bd = (Border)listViewItem.Template.FindName("border", listViewItem);
+                deleteFile.Visibility= Visibility.Collapsed;
+                if (((Path)listViewItem.Content).FullPath != player.Path)
+                {
+                    bd.SetBinding(BackgroundProperty, new Binding { RelativeSource = RelativeSource.TemplatedParent, Path = new PropertyPath("Background") });
+                }
+            }
+        }
+        private void deleteFile_Click(object sender, RoutedEventArgs e)
+        {
+            deleteFile.Visibility = Visibility.Collapsed;
+            int index = Listview.ItemContainerGenerator.IndexFromContainer(listViewItem);
+            string oriPath = ((Path)listViewItem.Content).FullPath;
+            FileList.RemoveAt(index);
+            if (oriPath == player.Path)
+            {
+                timer.Stop();
+                player.Stop();
+                player.CleanPath();
+                if (FileList.Count > 0 && index != FileList.Count)
+                {
+                    GoToPlay(FileList[index].FullPath, true);
+                }
+                else
+                {
+                    TimeBar.Value = 0;
+                    ControlButtonStatusChange(player.Playable);
+                    NowPlayTxt.Text = "Every audio is played.";
+                    StatusBarUpdate("Every audio is played.");
+                    NowTime.Content = TimeSpan.Zero.ToString();
+                    AllTime.Content = TimeSpan.Zero.ToString();
+                }
+            }
+            else
+            {
+                CheckFileListButtonStatus(player.Path);
             }
         }
     }

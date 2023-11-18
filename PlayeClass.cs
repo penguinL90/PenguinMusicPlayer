@@ -57,6 +57,7 @@ namespace MusicApp
             _totalbytes = 0;
             _bytepersec = 0;
             _volume = 0.5;
+            _path = String.Empty;
         }
         public long GetNowTick()
         {
@@ -153,5 +154,9 @@ namespace MusicApp
         {
             get { return _player.PlaybackState; }
         }
+        public void CleanPath()
+        {
+            _path = String.Empty;
+        }   
     }
 }
