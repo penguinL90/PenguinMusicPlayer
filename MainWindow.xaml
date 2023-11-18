@@ -139,7 +139,6 @@
                   Grid.RowSpan="7" 
                   Margin="0 30 0 0"
                   ScrollViewer.CanContentScroll="False" 
-                  ItemsSource="{Binding FileList}"
                   AllowDrop="True" d:ItemsSource="{d:SampleData ItemCount=5}"
                   >
             <ListView.ItemContainerStyle>
@@ -152,7 +151,7 @@
                     <Setter Property="FontFamily" Value="Consolas"/>
                     <Setter Property="Foreground" Value="#FF404040"/>
                     <Setter Property="FontSize" Value="14"/>
-                    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual1}"/>
+                    <Setter Property="FocusVisualStyle" Value="{DynamicResource FocusVisual}"/>
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListViewItem">
