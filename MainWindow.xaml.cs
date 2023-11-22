@@ -26,50 +26,6 @@ namespace MusicApp
         private BitmapImage pauseImg;
         private BitmapImage playImg;
         private bool Oritimerstatus;
-        public readonly struct Path
-        {
-            public string ShortPath { get; init; }
-            public string FullPath { get; init; }
-            public Path(string shortpath, string fullpath)
-            {
-                ShortPath = shortpath;
-                FullPath = fullpath;
-            }
-            public override string ToString()
-            {
-                return ShortPath;
-            }
-        }
-        public class fileList: ObservableCollection<Path>
-        {
-            public fileList() : base() { }
-            public int FindFullPathIndex(string fullpath)
-            {
-                int _count = 0;
-                foreach (var item in this)
-                {
-                    if (item.FullPath == fullpath)
-                    {
-                        return _count;
-                    }
-                    _count++;
-                }
-                return -1;
-            }
-            public int FindShortPathIndex(string shortpath)
-            {
-                int _count = 0;
-                foreach (var item in this)
-                {
-                    if (item.ShortPath == shortpath)
-                    {
-                        return _count;
-                    }
-                    _count++;
-                }
-                return -1;
-            }
-        }
         public MainWindow()
         {
             InitializeComponent();
@@ -108,12 +64,26 @@ namespace MusicApp
                 throw;
             }
         }
+        //Time and Key Event
         private void Keydown(object sender, KeyEventArgs e)
         {
             if (!player.Playable) return;
             if (e.Key != Key.Space) return;
             ControlPlay();
         }
+        private void SliderTimerChange(object? sender, EventArgs e)
+        {
+            TimeBar.Value = player.NowTime.TotalSeconds;
+            NowTime.Content = player.NowTime.ToString();
+        }
+        private void CheckAudioPlayEndOrNext(object? sender, EventArgs e)
+        {
+            if (player.PlaybackState == PlaybackState.Stopped)
+            {
+                CheckAudioPlayEndOrNext();
+            }
+        }
+        //Player Ctrl
         private void GoToPlay(string path, bool willplay)
         {
             timer.Stop();
@@ -156,18 +126,6 @@ namespace MusicApp
             }
             else controlImg.Source = pauseImg;
         }
-        private void SliderTimerChange(object? sender, EventArgs e)
-        {
-            TimeBar.Value = player.NowTime.TotalSeconds;
-            NowTime.Content = player.NowTime.ToString();
-        }
-        private void CheckAudioPlayEndOrNext(object? sender, EventArgs e)
-        {
-            if (player.PlaybackState == PlaybackState.Stopped)
-            {
-                CheckAudioPlayEndOrNext();
-            }
-        }
         private void CheckAudioPlayEndOrNext()
         {
             int index = FileList.FindFullPathIndex(player.Path);
@@ -187,11 +145,11 @@ namespace MusicApp
             {
                 player.Stop();
                 string _path = FileList[index + 1].FullPath;
-                index++;
                 GoToPlay(_path, true);
                 StatusBarUpdate("Next audio");
             }
         }
+        //Button
         private void ControlButtonStatusChange(bool status)
         {
             Forward.IsEnabled = status;
@@ -254,6 +212,7 @@ namespace MusicApp
                 CheckFileListButtonStatus(player.Path);
             }
         }
+        //ListView
         private void ListViewItem_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -281,6 +240,9 @@ namespace MusicApp
             int sourceindex = FileList.FindFullPathIndex(sourceitemfull);
 
             FileList.Move(targetindex, sourceindex);
+
+            ControlButtonStatusChange(player.Playable);
+            CheckFileListButtonStatus(player.Path);
         }
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -288,86 +250,6 @@ namespace MusicApp
             ListViewItem item = (ListViewItem)sender;
             string itemName = ((Path)item.Content).FullPath;
             GoToPlay(itemName, true);
-        }
-        private void TimeBar_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-        {
-            if (timer.IsEnabled)
-            {
-                timer.Stop();
-                Oritimerstatus = true;
-            }
-            else Oritimerstatus = false;
-        }
-        private void TimeBar_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        {
-            player.Set((long)TimeBar.Value * player.BytePreSec);
-            if (Oritimerstatus)
-            {
-                timer.Start();
-            }
-        }
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            player.Volume = VolumeBar.Value;
-            VolumeValue.Text = ((int)(player.Volume * 100)).ToString();
-        }
-        private void StatusBarUpdate(string message)
-        {
-            if (!String.IsNullOrWhiteSpace(message))
-            {
-                StatusBar.Items.Clear();
-                StatusBar.Items.Add(message);
-            }
-        }
-        private void VersionInfo_Click(object sender, RoutedEventArgs e)
-        {
-            Window window = new VersionWindows();
-            window.WindowStartupLocation = WindowStartupLocation.Manual;
-            window.Left = this.Left + this.Width / 2 - window.Width / 2;
-            window.Top = this.Top + this.Height / 2 - window.Height / 2;
-            window.ShowDialog();
-        }
-        private void TimeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Slider bar = (Slider)sender;
-            double barWidth = bar.ActualWidth;
-            double mousePosX = e.GetPosition(bar).X;
-            double timePos = (mousePosX / barWidth);
-            double barPos = (bar.Value / bar.Maximum);
-            double Tolerance = 7 / barWidth;
-            if (mousePosX >= 0 && mousePosX <= barWidth && Math.Abs(timePos - barPos) > Tolerance)
-            {
-
-                if (bar.Name == "TimeBar")
-                {
-                    long timePosLong = (long)(timePos * player.TotalBytes);
-                    player.Set(timePosLong);
-                    TimeBar.Value = player.NowTime.TotalSeconds;
-                    NowTime.Content = player.NowTime.ToString();
-                }
-                else if (bar.Name == "VolumeBar")
-                {
-                    bar.Value = timePos;
-                }
-            }
-        }
-        private void CheckFileListButtonStatus(string? path)
-        {
-            if (FileList.Count < 1)
-            {
-                Backward.IsEnabled = false;
-                Forward.IsEnabled = false;
-                return;
-            }
-            if (path != null)
-            {
-                int _index = FileList.FindFullPathIndex(path);
-                if (_index == 0)
-                {
-                    Backward.IsEnabled = false;
-                    return;
-                }
-            }
         }
         private void ListViewColorChanged(int previousIndex, int index)
         {
@@ -442,6 +324,88 @@ namespace MusicApp
             else
             {
                 CheckFileListButtonStatus(player.Path);
+            }
+        }
+        //Slider
+        private void TimeBar_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            if (timer.IsEnabled)
+            {
+                timer.Stop();
+                Oritimerstatus = true;
+            }
+            else Oritimerstatus = false;
+        }
+        private void TimeBar_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            player.Set((long)TimeBar.Value * player.BytePreSec);
+            if (Oritimerstatus)
+            {
+                timer.Start();
+            }
+        }
+        private void TimeBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Slider bar = (Slider)sender;
+            double barWidth = bar.ActualWidth;
+            double mousePosX = e.GetPosition(bar).X;
+            double timePos = (mousePosX / barWidth);
+            double barPos = (bar.Value / bar.Maximum);
+            double Tolerance = 7 / barWidth;
+            if (mousePosX >= 0 && mousePosX <= barWidth && Math.Abs(timePos - barPos) > Tolerance)
+            {
+
+                if (bar.Name == "TimeBar")
+                {
+                    long timePosLong = (long)(timePos * player.TotalBytes);
+                    player.Set(timePosLong);
+                    TimeBar.Value = player.NowTime.TotalSeconds;
+                    NowTime.Content = player.NowTime.ToString();
+                }
+                else if (bar.Name == "VolumeBar")
+                {
+                    bar.Value = timePos;
+                }
+            }
+        }
+        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            player.Volume = VolumeBar.Value;
+            VolumeValue.Text = ((int)(player.Volume * 100)).ToString();
+        }
+        //Others
+        private void StatusBarUpdate(string message)
+        {
+            if (!String.IsNullOrWhiteSpace(message))
+            {
+                StatusBar.Items.Clear();
+                StatusBar.Items.Add(message);
+            }
+        }
+        private void VersionInfo_Click(object sender, RoutedEventArgs e)
+        {
+            Window window = new VersionWindows();
+            window.WindowStartupLocation = WindowStartupLocation.Manual;
+            window.Left = this.Left + this.Width / 2 - window.Width / 2;
+            window.Top = this.Top + this.Height / 2 - window.Height / 2;
+            window.ShowDialog();
+        }
+        private void CheckFileListButtonStatus(string? path)
+        {
+            if (FileList.Count < 1)
+            {
+                Backward.IsEnabled = false;
+                Forward.IsEnabled = false;
+                return;
+            }
+            if (path != null)
+            {
+                int _index = FileList.FindFullPathIndex(path);
+                if (_index == 0)
+                {
+                    Backward.IsEnabled = false;
+                    return;
+                }
             }
         }
     }

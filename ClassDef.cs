@@ -1,5 +1,6 @@
 ﻿using NAudio.Wave;
 using System;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.Versioning;
 namespace MusicApp
@@ -157,6 +158,37 @@ namespace MusicApp
         public void CleanPath()
         {
             _path = String.Empty;
-        }   
+        }
+    }
+    public readonly struct Path
+    {
+        public string ShortPath { get; init; }
+        public string FullPath { get; init; }
+        public Path(string shortpath, string fullpath)
+        {
+            ShortPath = shortpath;
+            FullPath = fullpath;
+        }
+        public override string ToString()
+        {
+            return ShortPath;
+        }
+    }
+    public class fileList : ObservableCollection<Path>
+    {
+        public fileList() : base() { }
+        public int FindFullPathIndex(string fullpath)
+        {
+            int _count = 0;
+            foreach (var item in this)
+            {
+                if (item.FullPath == fullpath)
+                {
+                    return _count;
+                }
+                _count++;
+            }
+            return -1;
+        }
     }
 }
