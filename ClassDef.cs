@@ -3,6 +3,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.ComponentModel;
+using System.Windows.Forms;
+
 namespace MusicApp
 {
 
@@ -160,14 +163,35 @@ namespace MusicApp
             _path = String.Empty;
         }
     }
-    public readonly struct Path
+    public class Path : INotifyPropertyChanged
     {
-        public string ShortPath { get; init; }
-        public string FullPath { get; init; }
-        public Path(string shortpath, string fullpath)
+        private string shortPath;
+        private string fullPath;
+        public event PropertyChangedEventHandler? PropertyChanged;
+        public string ShortPath
         {
-            ShortPath = shortpath;
-            FullPath = fullpath;
+            get
+            {
+                return shortPath;
+            }
+            set
+            {
+                if (shortPath != value)
+                {
+                    shortPath = value;
+                    OnPropertyChanged(nameof(ShortPath));
+                }
+            }
+        }
+        public string FullPath { get => fullPath; set => fullPath = value; }
+        public Path(string shortPath, string fullPath)
+        {
+            ShortPath = shortPath;
+            FullPath = fullPath;
+        }
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.DynamicInvoke(this, new PropertyChangedEventArgs(propertyName));
         }
         public override string ToString()
         {

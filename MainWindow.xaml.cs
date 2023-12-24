@@ -21,32 +21,43 @@ namespace MusicApp
         private Player player;
         public fileList FileList;
         private DispatcherTimer timer;
+        private DispatcherTimer statusbartimer;
         private int TimeBarStart = 0;
         private int TimeBarEnd;
         private BitmapImage pauseImg;
         private BitmapImage playImg;
         private bool Oritimerstatus;
+#pragma warning disable CS8618
         public MainWindow()
         {
             InitializeComponent();
+
             DataContext = this;
+
             player = new Player();
             FileList = new();
             Listview.ItemsSource = FileList;
+
             ControlButtonStatusChange(player.Playable);
+
+            this.KeyDown += new KeyEventHandler(Keydown);
+
+            statusbartimer = new();
+
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(250);
             timer.Tick += SliderTimerChange;
             timer.Tick += CheckAudioPlayEndOrNext;
+
             VolumeBar.Value = player.Volume;
             NowPlayTxt.Text = "Nothing play yet";
             VolumeValue.Text = ((int)(player.Volume * 100)).ToString();
             AllTime.Content = TimeSpan.Zero.ToString();
             NowTime.Content = TimeSpan.Zero.ToString();
-            this.KeyDown += new KeyEventHandler(Keydown);
-            StatusBarUpdate("Ready.");
             pauseImg = bitmapInit(@"\imgs\pause.png");
             playImg = bitmapInit(@"\imgs\play.png");
+
+            StatusBarUpdate("Ready.", 2);
         }
         private BitmapImage bitmapInit(string uri)
         {
@@ -93,7 +104,7 @@ namespace MusicApp
             if (timetick == -1)
             {
                 CheckAudioPlayEndOrNext();
-                StatusBarUpdate("The audio can't play.");
+                StatusBarUpdate("The audio can't play.", 2);
                 return;
             }
             int previousIndex;
@@ -136,7 +147,7 @@ namespace MusicApp
                 ControlButtonStatusChange(player.Playable);
                 TimeBar.Value = 0;
                 NowPlayTxt.Text = "Every audio is played.";
-                StatusBarUpdate("Every audio is played.");
+                StatusBarUpdate("Every audio is played.", -1);
                 NowTime.Content = TimeSpan.Zero.ToString();
                 AllTime.Content = TimeSpan.Zero.ToString();
                 timer.Stop();
@@ -146,7 +157,7 @@ namespace MusicApp
                 player.Stop();
                 string _path = FileList[index + 1].FullPath;
                 GoToPlay(_path, true);
-                StatusBarUpdate("Next audio");
+                StatusBarUpdate("Next audio", -1);
             }
         }
         //Button
@@ -172,15 +183,17 @@ namespace MusicApp
             player.PlayAndPause();
             if (player.Isplayed)
             {
+                FileList[FileList.FindFullPathIndex(player.Path)].ShortPath = $"[Playing] {FileList[FileList.FindFullPathIndex(player.Path)].ShortPath}";
                 controlImg.Source = playImg;
                 timer.Start();
-                StatusBarUpdate("Play.");
+                StatusBarUpdate("Play.", -1);
             }
             else
             {
+                FileList[FileList.FindFullPathIndex(player.Path)].ShortPath = $"{FileList[FileList.FindFullPathIndex(player.Path)].ShortPath.Substring(10)}";
                 controlImg.Source = pauseImg;
                 timer.Stop();
-                StatusBarUpdate("Pause.");
+                StatusBarUpdate("Pause.", -1);
             }
         }
         private void Forward_Click(object sender, RoutedEventArgs e)
@@ -201,13 +214,13 @@ namespace MusicApp
                 {
                     if (ofd.FileName == item.FullPath)
                     {
-                        StatusBarUpdate("This audio file is already in the list.");
+                        StatusBarUpdate("This audio file is already in the list.", 2);
                         return;
                     }
                 }
                 Path path = new(ofd.FileName.Split(@"\")[^1], ofd.FileName);
                 FileList.Add(path);
-                StatusBarUpdate($"Add file {ofd.FileName}");
+                StatusBarUpdate($"Add file {ofd.FileName}", 2);
                 ControlButtonStatusChange(player.Playable);
                 CheckFileListButtonStatus(player.Path);
             }
@@ -316,7 +329,7 @@ namespace MusicApp
                     TimeBar.Value = 0;
                     ControlButtonStatusChange(player.Playable);
                     NowPlayTxt.Text = "Every audio is played.";
-                    StatusBarUpdate("Every audio is played.");
+                    StatusBarUpdate("Every audio is played.", -1);
                     NowTime.Content = TimeSpan.Zero.ToString();
                     AllTime.Content = TimeSpan.Zero.ToString();
                 }
@@ -374,13 +387,38 @@ namespace MusicApp
             VolumeValue.Text = ((int)(player.Volume * 100)).ToString();
         }
         //Others
-        private void StatusBarUpdate(string message)
+        private void StatusBarUpdate(string message, int Lefttime)
         {
-            if (!String.IsNullOrWhiteSpace(message))
+            if (string.IsNullOrEmpty(message)) return;
+            switch (Lefttime)
+            {
+                case -1:
+                    if (statusbartimer.IsEnabled)
+                    {
+                        statusbartimer.Stop();
+                    }
+                    _update(message);
+                    break;
+                case > 0:
+                    statusbartimer.Stop();
+                    statusbartimer.Interval = TimeSpan.FromSeconds(Lefttime);
+                    statusbartimer.Tick += StatusClear;
+                    _update(message);
+                    statusbartimer.Start();
+                    break;
+                default:
+                    break;
+            }
+            void _update(string message)
             {
                 StatusBar.Items.Clear();
                 StatusBar.Items.Add(message);
             }
+        }
+        private void StatusClear(object? sender, EventArgs e)
+        {
+            StatusBar.Items.Clear();
+            statusbartimer.Stop();
         }
         private void VersionInfo_Click(object sender, RoutedEventArgs e)
         {
