@@ -156,7 +156,7 @@
                         <Setter.Value>
                             <ControlTemplate TargetType="ListViewItem">
                                 <Border x:Name="border" Padding="1" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="{TemplateBinding BorderThickness}">
-                                    <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{Binding ShortPath}"/>
+                                    <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{Binding ShowPath}"/>
                                 </Border>
                             </ControlTemplate>
                         </Setter.Value>

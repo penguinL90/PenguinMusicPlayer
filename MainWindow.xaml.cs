@@ -2,16 +2,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Shapes;
 using Microsoft.Win32;
-using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using System.Windows.Media.Imaging;
 using NAudio.Wave;
 using System.Runtime.Versioning;
 using System.Windows.Media;
 using System.Windows.Data;
-using System.IO;
+using System.Windows.Controls.Primitives;
 
 namespace MusicApp
 {
@@ -40,15 +38,12 @@ namespace MusicApp
 
             ControlButtonStatusChange(player.Playable);
 
-            this.KeyDown += new KeyEventHandler(Keydown);
-
             statusbartimer = new();
 
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(250);
             timer.Tick += SliderTimerChange;
-            timer.Tick += CheckAudioPlayEndOrNext;
-
+            timer.Tick += AudioPlayStoppedTimer;
             VolumeBar.Value = player.Volume;
             NowPlayTxt.Text = "Nothing play yet";
             VolumeValue.Text = ((int)(player.Volume * 100)).ToString();
@@ -75,19 +70,13 @@ namespace MusicApp
                 throw;
             }
         }
-        //Time and Key Event
-        private void Keydown(object sender, KeyEventArgs e)
-        {
-            if (!player.Playable) return;
-            if (e.Key != Key.Space) return;
-            ControlPlay();
-        }
+        //Time Event
         private void SliderTimerChange(object? sender, EventArgs e)
         {
             TimeBar.Value = player.NowTime.TotalSeconds;
             NowTime.Content = player.NowTime.ToString();
         }
-        private void CheckAudioPlayEndOrNext(object? sender, EventArgs e)
+        private void AudioPlayStoppedTimer(object? sender, EventArgs e)
         {
             if (player.PlaybackState == PlaybackState.Stopped)
             {
@@ -95,11 +84,11 @@ namespace MusicApp
             }
         }
         //Player Ctrl
-        private void GoToPlay(string path, bool willplay)
+        private void GoToPlay(Path path, bool willplay)
         {
             timer.Stop();
 
-            string previoudPath = player.Path;
+            Path? previousPath = player.Path;
             long timetick = player.ReadInAudio(path);
             if (timetick == -1)
             {
@@ -108,26 +97,20 @@ namespace MusicApp
                 return;
             }
             int previousIndex;
-            if (previoudPath == String.Empty)
-            {
-                previousIndex = -1;
-            }
-            else
-            {
-                previousIndex = FileList.FindFullPathIndex(previoudPath);
-            }
+            previousIndex = FileList.FindPathIndex(previousPath);
+            
 
 
             TimeBar.Value = 0;
             TimeBarEnd = (int)(timetick / player.BytePreSec);
             TimeBar.Maximum = TimeBarEnd;
 
-            int index = FileList.FindFullPathIndex(path);
+            int index = FileList.FindPathIndex(path);
             ListViewColorChanged(previousIndex, index);
 
             NowTime.Content = TimeSpan.Zero.ToString();
             AllTime.Content = TimeSpan.FromSeconds(TimeBarEnd).ToString();
-            NowPlayTxt.Text = player.Path.Split(@"\")[^1];
+            NowPlayTxt.Text = player.Path.ShortPath;
 
             ControlButtonStatusChange(player.Playable);
             CheckFileListButtonStatus(player.Path);
@@ -139,7 +122,7 @@ namespace MusicApp
         }
         private void CheckAudioPlayEndOrNext()
         {
-            int index = FileList.FindFullPathIndex(player.Path);
+            int index = FileList.FindPathIndex(player.Path);
             if (index == FileList.Count - 1)
             {
                 player.Stop();
@@ -155,7 +138,7 @@ namespace MusicApp
             else
             {
                 player.Stop();
-                string _path = FileList[index + 1].FullPath;
+                Path _path = FileList[index + 1];
                 GoToPlay(_path, true);
                 StatusBarUpdate("Next audio", -1);
             }
@@ -172,7 +155,7 @@ namespace MusicApp
         {
             player.Stop();
             ControlButtonStatusChange(player.Playable);
-            GoToPlay(FileList[FileList.FindFullPathIndex(player.Path) - 1].FullPath, true);
+            GoToPlay(FileList[FileList.FindPathIndex(player.Path) - 1], true);
         }
         private void Control_Click(object sender, RoutedEventArgs e)
         {
@@ -183,14 +166,12 @@ namespace MusicApp
             player.PlayAndPause();
             if (player.Isplayed)
             {
-                FileList[FileList.FindFullPathIndex(player.Path)].ShortPath = $"[Playing] {FileList[FileList.FindFullPathIndex(player.Path)].ShortPath}";
                 controlImg.Source = playImg;
                 timer.Start();
                 StatusBarUpdate("Play.", -1);
             }
             else
             {
-                FileList[FileList.FindFullPathIndex(player.Path)].ShortPath = $"{FileList[FileList.FindFullPathIndex(player.Path)].ShortPath.Substring(10)}";
                 controlImg.Source = pauseImg;
                 timer.Stop();
                 StatusBarUpdate("Pause.", -1);
@@ -235,7 +216,7 @@ namespace MusicApp
                     ListViewItem sourcelistViewItem = (ListViewItem)sender;
                     DragDrop.DoDragDrop(Listview, sourcelistViewItem, DragDropEffects.Move);
                 }
-                catch (Exception)
+                catch
                 {
                     throw;
                 }
@@ -246,11 +227,8 @@ namespace MusicApp
             ListViewItem targetlistviewitem = (ListViewItem)sender;
             ListViewItem sourcelistViewItem = (ListViewItem)e.Data.GetData("System.Windows.Controls.ListViewItem");
 
-            string targetitemfull = ((Path)targetlistviewitem.Content).FullPath;
-            string sourceitemfull = ((Path)sourcelistViewItem.Content).FullPath;
-
-            int targetindex = FileList.FindFullPathIndex(targetitemfull);
-            int sourceindex = FileList.FindFullPathIndex(sourceitemfull);
+            int targetindex = FileList.FindPathIndex((Path)targetlistviewitem.Content);
+            int sourceindex = FileList.FindPathIndex((Path)sourcelistViewItem.Content);
 
             FileList.Move(targetindex, sourceindex);
 
@@ -261,7 +239,7 @@ namespace MusicApp
         {
             player.Stop();
             ListViewItem item = (ListViewItem)sender;
-            string itemName = ((Path)item.Content).FullPath;
+            Path itemName = ((Path)item.Content);
             GoToPlay(itemName, true);
         }
         private void ListViewColorChanged(int previousIndex, int index)
@@ -291,7 +269,7 @@ namespace MusicApp
             Border bd = (Border)listViewItem.Template.FindName("border", listViewItem);
             double delPosY = listViewItem.TranslatePoint(new Point(0, 0), Listview).Y + 32;
             deleteFile.Margin = new Thickness(0, delPosY, 5, 0);
-            if (((Path)listViewItem.Content).FullPath != player.Path)
+            if ((Path)listViewItem.Content != player.Path)
             {
                 bd.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFA6A6A6"));
             }
@@ -303,7 +281,7 @@ namespace MusicApp
                 listViewItem = (ListViewItem)sender;
                 Border bd = (Border)listViewItem.Template.FindName("border", listViewItem);
                 deleteFile.Visibility= Visibility.Collapsed;
-                if (((Path)listViewItem.Content).FullPath != player.Path)
+                if ((Path)listViewItem.Content != player.Path)
                 {
                     bd.SetBinding(BackgroundProperty, new Binding { RelativeSource = RelativeSource.TemplatedParent, Path = new PropertyPath("Background") });
                 }
@@ -313,7 +291,7 @@ namespace MusicApp
         {
             deleteFile.Visibility = Visibility.Collapsed;
             int index = Listview.ItemContainerGenerator.IndexFromContainer(listViewItem);
-            string oriPath = ((Path)listViewItem.Content).FullPath;
+            Path oriPath = (Path)listViewItem.Content;
             FileList.RemoveAt(index);
             if (oriPath == player.Path)
             {
@@ -322,7 +300,7 @@ namespace MusicApp
                 player.CleanPath();
                 if (FileList.Count > 0 && index != FileList.Count)
                 {
-                    GoToPlay(FileList[index].FullPath, true);
+                    GoToPlay(FileList[index], true);
                 }
                 else
                 {
@@ -340,7 +318,7 @@ namespace MusicApp
             }
         }
         //Slider
-        private void TimeBar_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        private void TimeBar_DragStarted(object sender, DragStartedEventArgs e)
         {
             if (timer.IsEnabled)
             {
@@ -349,7 +327,7 @@ namespace MusicApp
             }
             else Oritimerstatus = false;
         }
-        private void TimeBar_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void TimeBar_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             player.Set((long)TimeBar.Value * player.BytePreSec);
             if (Oritimerstatus)
@@ -428,7 +406,7 @@ namespace MusicApp
             window.Top = this.Top + this.Height / 2 - window.Height / 2;
             window.ShowDialog();
         }
-        private void CheckFileListButtonStatus(string? path)
+        private void CheckFileListButtonStatus(Path? path)
         {
             if (FileList.Count < 1)
             {
@@ -438,7 +416,7 @@ namespace MusicApp
             }
             if (path != null)
             {
-                int _index = FileList.FindFullPathIndex(path);
+                int _index = FileList.FindPathIndex(path);
                 if (_index == 0)
                 {
                     Backward.IsEnabled = false;

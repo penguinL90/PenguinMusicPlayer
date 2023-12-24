@@ -5,6 +5,8 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace MusicApp
 {
@@ -18,8 +20,9 @@ namespace MusicApp
         private bool _isplayed;
         private long _totalbytes;
         private long _bytepersec;
-        private string _path;
+        private Path _path;
         private double _volume;
+
         public bool Isplayed { get => _isplayed; }
         public long TotalBytes { get => _totalbytes; }
         public long BytePreSec { get => _bytepersec; }
@@ -52,34 +55,34 @@ namespace MusicApp
                 return cache;
             }
         }
-        public string Path { get => _path; }
+        public Path Path { get => _path; }
         public Player()
         {
+            _path = new("", "");
             _player = new WaveOutEvent();
             _isplayed = false;
             _playable = false;
             _totalbytes = 0;
             _bytepersec = 0;
             _volume = 0.5;
-            _path = String.Empty;
         }
         public long GetNowTick()
         {
             return _filereader.Position;
         }
-        public long ReadInAudio(string path)
+        public long ReadInAudio(Path path)
         {
             try
             {
                 _path = path;
                 if (_filereader == null)
                 {
-                    _filereader = new AudioFileReader(_path);
+                    _filereader = new AudioFileReader(_path.FullPath);
                 }
                 else
                 {
                     _filereader.Dispose();
-                    _filereader = new AudioFileReader(_path);
+                    _filereader = new AudioFileReader(_path.FullPath);
                 }
                 _player.Init(_filereader);
                 _playable = true;
@@ -98,11 +101,13 @@ namespace MusicApp
             {
                 if (_isplayed)
                 {
+                    _path.ShowPath = _path.ShortPath;
                     _player.Pause();
                     _isplayed = false;
                 }
                 else
                 {
+                    _path.ShowPath = $"[Playing] {_path.ShowPath}";
                     _player.Play();
                     _isplayed = true;
                 }
@@ -113,6 +118,7 @@ namespace MusicApp
             if (_playable)
             {
                 _player.Stop();
+                _path.ShowPath = _path.ShortPath;
                 _isplayed = false;
                 _playable = false;
             }
@@ -160,14 +166,25 @@ namespace MusicApp
         }
         public void CleanPath()
         {
-            _path = String.Empty;
+            _path = new("","");
         }
+        
     }
     public class Path : INotifyPropertyChanged
     {
+        private string showPath;
         private string shortPath;
         private string fullPath;
         public event PropertyChangedEventHandler? PropertyChanged;
+        public string ShowPath
+        {
+            get => showPath;
+            set 
+            {
+                showPath = value;
+                OnPropertyChanged();
+            }
+        }
         public string ShortPath
         {
             get
@@ -176,20 +193,17 @@ namespace MusicApp
             }
             set
             {
-                if (shortPath != value)
-                {
-                    shortPath = value;
-                    OnPropertyChanged(nameof(ShortPath));
-                }
+                shortPath = value;               
             }
         }
         public string FullPath { get => fullPath; set => fullPath = value; }
         public Path(string shortPath, string fullPath)
         {
-            ShortPath = shortPath;
-            FullPath = fullPath;
+            this.shortPath = shortPath;
+            this.fullPath = fullPath;
+            showPath = shortPath;
         }
-        protected void OnPropertyChanged(string propertyName)
+        protected void OnPropertyChanged([CallerMemberName]string propertyName = "")
         {
             PropertyChanged?.DynamicInvoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -201,12 +215,12 @@ namespace MusicApp
     public class fileList : ObservableCollection<Path>
     {
         public fileList() : base() { }
-        public int FindFullPathIndex(string fullpath)
+        public int FindPathIndex(Path path)
         {
             int _count = 0;
             foreach (var item in this)
             {
-                if (item.FullPath == fullpath)
+                if (item.ShortPath == path.ShortPath)
                 {
                     return _count;
                 }
