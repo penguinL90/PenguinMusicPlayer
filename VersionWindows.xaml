@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MusicApp"
         mc:Ignorable="d"
-        Title="App Version" Height="200" Width="256" Background="#FF595959" ResizeMode="NoResize"
+        Title="Version Info" Height="200" Width="256" Background="#FF595959" ResizeMode="NoResize"
         Icon="/imgs/icon.png">
     <Grid>
         <Grid.ColumnDefinitions>

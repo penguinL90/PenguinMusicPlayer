@@ -1,18 +1,15 @@
 ﻿using NAudio.Wave;
 using System;
-using System.Collections.ObjectModel;
-using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Versioning;
-using System.ComponentModel;
-using System.Windows.Forms;
-using System.Numerics;
-using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace MusicApp
+namespace MusicApp.Class
 {
-
     [SupportedOSPlatform("windows7.0")]
-    class Player
+    internal class Player
     {
         private WaveOutEvent _player;
         private AudioFileReader _filereader;
@@ -22,7 +19,6 @@ namespace MusicApp
         private long _bytepersec;
         private Path _path;
         private double _volume;
-
         public bool Isplayed { get => _isplayed; }
         public long TotalBytes { get => _totalbytes; }
         public long BytePreSec { get => _bytepersec; }
@@ -39,23 +35,13 @@ namespace MusicApp
                 _player.Volume = (float)_volume;
             }
         }
-        public TimeSpan NowTime
-        {
-            get
-            {
-                TimeSpan chace = _filereader?.CurrentTime ?? TimeSpan.Zero;
-                return chace;
-            }
-        }
-        public long NowTimeTick
-        {
-            get
-            {
-                long cache = _filereader?.Position ?? 0;
-                return cache;
-            }
-        }
+        public TimeSpan NowTime { get => _filereader?.CurrentTime ?? TimeSpan.Zero; }
+        public long NowTimeTick { get => _filereader?.Position ?? 0; }
         public Path Path { get => _path; }
+        public PlaybackState PlaybackState
+        {
+            get { return _player.PlaybackState; }
+        }
         public Player()
         {
             _path = new("", "");
@@ -101,13 +87,13 @@ namespace MusicApp
             {
                 if (_isplayed)
                 {
-                    _path.ShowPath = _path.ShortPath;
+                    _path.ShowPath = $"[Pause] {_path.ShortPath}";
                     _player.Pause();
                     _isplayed = false;
                 }
                 else
                 {
-                    _path.ShowPath = $"[Playing] {_path.ShowPath}";
+                    _path.ShowPath = $"[Playing] {_path.ShortPath}";
                     _player.Play();
                     _isplayed = true;
                 }
@@ -160,73 +146,9 @@ namespace MusicApp
                 _filereader.Position = tick;
             }
         }
-        public PlaybackState PlaybackState
-        {
-            get { return _player.PlaybackState; }
-        }
         public void CleanPath()
         {
-            _path = new("","");
-        }
-        
-    }
-    public class Path : INotifyPropertyChanged
-    {
-        private string showPath;
-        private string shortPath;
-        private string fullPath;
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public string ShowPath
-        {
-            get => showPath;
-            set 
-            {
-                showPath = value;
-                OnPropertyChanged();
-            }
-        }
-        public string ShortPath
-        {
-            get
-            {
-                return shortPath;
-            }
-            set
-            {
-                shortPath = value;               
-            }
-        }
-        public string FullPath { get => fullPath; set => fullPath = value; }
-        public Path(string shortPath, string fullPath)
-        {
-            this.shortPath = shortPath;
-            this.fullPath = fullPath;
-            showPath = shortPath;
-        }
-        protected void OnPropertyChanged([CallerMemberName]string propertyName = "")
-        {
-            PropertyChanged?.DynamicInvoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        public override string ToString()
-        {
-            return ShortPath;
-        }
-    }
-    public class fileList : ObservableCollection<Path>
-    {
-        public fileList() : base() { }
-        public int FindPathIndex(Path path)
-        {
-            int _count = 0;
-            foreach (var item in this)
-            {
-                if (item.ShortPath == path.ShortPath)
-                {
-                    return _count;
-                }
-                _count++;
-            }
-            return -1;
+            _path = new("", "");
         }
     }
 }

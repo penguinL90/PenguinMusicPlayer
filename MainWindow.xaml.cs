@@ -10,6 +10,7 @@ using System.Runtime.Versioning;
 using System.Windows.Media;
 using System.Windows.Data;
 using System.Windows.Controls.Primitives;
+using MusicApp.Class;
 
 namespace MusicApp
 {
@@ -17,7 +18,7 @@ namespace MusicApp
     public partial class MainWindow : Window
     {
         private Player player;
-        public fileList FileList;
+        private fileList FileList;
         private DispatcherTimer timer;
         private DispatcherTimer statusbartimer;
         private int TimeBarStart = 0;
@@ -98,9 +99,7 @@ namespace MusicApp
             }
             int previousIndex;
             previousIndex = FileList.FindPathIndex(previousPath);
-            
-
-
+           
             TimeBar.Value = 0;
             TimeBarEnd = (int)(timetick / player.BytePreSec);
             TimeBar.Maximum = TimeBarEnd;
