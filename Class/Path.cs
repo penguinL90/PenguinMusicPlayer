@@ -8,6 +8,31 @@ using System.Threading.Tasks;
 
 namespace MusicApp.Class
 {
+    internal struct FilePath : IEquatable<FilePath>
+    {
+
+        public string FullPath;
+        public string ShortPath
+        {
+            get
+            {
+                for (int i = FullPath.Length - 1; i >= 0; --i)
+                {
+                    if (FullPath[i] == '/' || FullPath[i] == '\\')
+                        return FullPath[(i + 1)..];
+                }
+                return "";
+            }
+        }
+
+        public bool Equals(FilePath other)
+        {
+            return FullPath.Equals(other.FullPath);
+        }
+
+        public static FilePath Empty => new FilePath();
+    }
+
     internal class Path : INotifyPropertyChanged
     {
         private string showPath;
@@ -43,7 +68,7 @@ namespace MusicApp.Class
         }
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            PropertyChanged?.DynamicInvoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         public override string ToString()
         {

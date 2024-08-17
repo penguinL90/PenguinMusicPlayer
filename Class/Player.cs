@@ -151,4 +151,78 @@ namespace MusicApp.Class
             _path = new("", "");
         }
     }
+
+    [SupportedOSPlatform("windows7.0")]
+    internal class Player2
+    {
+        public WaveOutEvent waveOutEvent;
+        private AudioFileReader? audioFileReader;
+
+        public Player2()
+        {
+            waveOutEvent = new();
+        }
+
+        public float Volume
+        {
+            get => waveOutEvent.Volume;
+            set
+            {
+                waveOutEvent.Volume = value;
+            }
+        }
+
+        public void SetAudioPath(FilePath path)
+        {
+            audioFileReader?.Dispose();
+            audioFileReader = new(path.FullPath);
+            waveOutEvent.Init(audioFileReader);
+        }
+
+        public void CleanPath()
+        {
+            audioFileReader?.Dispose();
+            audioFileReader = null;
+        }
+
+        public float GetPlayedTimeRate()
+        {
+            if (audioFileReader != null)
+                return audioFileReader.Position / audioFileReader.Length;
+            return -1;
+        }
+
+        public long GetLength()
+        {
+            if (audioFileReader != null)
+                return audioFileReader.Length;
+            return -1;
+        }
+
+        public void PlayAndPause()
+        {
+            if (audioFileReader == null) return;
+            if (waveOutEvent.PlaybackState == PlaybackState.Playing)
+                waveOutEvent.Pause();
+            else if (waveOutEvent.PlaybackState == PlaybackState.Paused)
+                waveOutEvent.Play();
+        }
+        public void Stop()
+        {
+            if (audioFileReader == null) return;
+            waveOutEvent.Stop();
+        }
+
+        public void Jump(long position)
+        {
+            if (audioFileReader == null) return;
+            if (position >= audioFileReader.Length)
+                waveOutEvent.Stop();
+            if (position >= 0)
+            {
+                audioFileReader.Position = position;
+                return;
+            }
+        }
+    }
 }
