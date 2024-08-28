@@ -3,6 +3,12 @@ using NAudio.Utils;
 using NAudio.Wave;
 using System;
 using System.Threading;
+using System.Numerics;
+using MathNet.Numerics.IntegralTransforms;
+using System.Threading.Tasks;
+using System.Linq;
+using MathNet.Numerics;
+using System.Collections.Generic;
 
 namespace Penguin690_sMusicPlayer.Models;
 
@@ -27,13 +33,19 @@ internal class MusicPlayer : IStatusSender
 
     public event EventHandler<PlayPauseChangedEventArgs> PlayPauseChanged;
 
+    public event EventHandler<FFTUpdateEventArgs> FFTUpdate;
+
     private WaveOutEvent Player;
 
     private AudioFileReader2? AudioFileReader;
 
     private readonly object _lock = new object();
 
+    private readonly int timerIntervalMillisec = 16;
+
     private DispatcherTimer timer;
+
+    private FFTWaver fftwaver;
 
     public MusicPlayer(Status status, nint hwnd)
     {
@@ -41,9 +53,10 @@ internal class MusicPlayer : IStatusSender
 
         Player = new();
         PlayList = new(status, hwnd);
+        fftwaver = new();
         timer = new()
         {
-            Interval = TimeSpan.FromMilliseconds(250)
+            Interval = TimeSpan.FromMilliseconds(timerIntervalMillisec)
         };
         timer.Tick += PlaybackStopped;
         ControlStatus = ControlStatus.ALLFalse;
@@ -69,8 +82,6 @@ internal class MusicPlayer : IStatusSender
 
     #endregion
 
-    #region essential controls
-
     public void OnControlStatusChanged()
     {
         ControlStatusChangedEvent?.Invoke(this, new());
@@ -85,6 +96,8 @@ internal class MusicPlayer : IStatusSender
     {
         PlayPauseChanged?.Invoke(this, new(status));
     }
+
+    #region essential controls
 
     public void SetVolume(double volume)
     {
@@ -108,6 +121,7 @@ internal class MusicPlayer : IStatusSender
             try
             {
                 AudioFileReader = new(file);
+                fftwaver.SetMusic(file);
                 Stop();
                 Player.Init(AudioFileReader);
                 Play();
@@ -183,8 +197,9 @@ internal class MusicPlayer : IStatusSender
     private void Play()
     {
         if (!timer.IsEnabled) timer.Start();
-        timer.Tick += OnTimebarChanged;
         Player.Play();
+        timer.Tick += OnTimebarChanged;
+        timer.Tick += FFT;
         OnPlayPauseChanged(PlayStatus.Pause);
         AudioFileReader!.musicFile.PlayStatus = PlayStatus.Play;
     }
@@ -195,6 +210,7 @@ internal class MusicPlayer : IStatusSender
     private void Pause()
     {
         Player.Pause();
+        timer.Tick -= FFT;
         OnPlayPauseChanged(PlayStatus.Play);
         AudioFileReader!.musicFile.PlayStatus = PlayStatus.Pause;
     }
@@ -212,6 +228,7 @@ internal class MusicPlayer : IStatusSender
         Player.Stop();
         OnPlayPauseChanged(PlayStatus.NotPlaying);
         timer.Tick -= OnTimebarChanged;
+        timer.Tick -= FFT;
         AudioFileReader.musicFile.PlayStatus = PlayStatus.NotPlaying;
     }
 
@@ -288,6 +305,20 @@ internal class MusicPlayer : IStatusSender
     }
 
     #endregion
+
+    #region FFT
+
+    private async void FFT(object? sender, object e)
+    {
+        await Task.Run(() =>
+        {
+            FFTUpdate?.Invoke(null, new(fftwaver.CountFFT(AudioFileReader!.Position)));
+        });
+    }
+
+
+
+    #endregion
 }
 
 internal record struct ControlStatus(bool Previous, bool PlayPause, bool Next)
@@ -311,4 +342,9 @@ internal class MusicSetEventArgs(TimeSpan totalTimeSpanTime, long totalTime, Mus
 internal class PlayPauseChangedEventArgs(PlayStatus status) : EventArgs
 {
     public PlayStatus Status = status;
+}
+
+internal class FFTUpdateEventArgs(double[] frequencies) : EventArgs
+{
+    public double[] Frequencies = frequencies;
 }

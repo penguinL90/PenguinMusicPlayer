@@ -150,85 +150,108 @@
                 </SplitView.Pane>
 
                 <SplitView.Content>
-                    
-                    <StackPanel HorizontalAlignment="Stretch"
-                                VerticalAlignment="Bottom">
 
-                        <TextBlock Text="{x:Bind viewModel.MusicName, Mode=OneWay}"
-                                   Margin="30 20"
-                                   Style="{ThemeResource TitleTextBlockStyle}"/>
+                    <Grid>
 
-                        <Grid HorizontalAlignment="Stretch" Margin="20 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" Margin="100 50"
+                                    HorizontalAlignment="Center">
 
-                            <TextBlock Width="60" Text="{x:Bind viewModel.CurrentTimeString, Mode=OneWay}"
-                                       Style="{ThemeResource BaseTextBlockStyle}"
-                                       HorizontalAlignment="Center"
-                                       HorizontalTextAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Grid.Column="0"/>
+                            <Slider Orientation="Vertical" Margin="25 10" Maximum="1" Minimum="0" Value="{x:Bind viewModel.FFTArray[0], Mode=OneWay}" StepFrequency="0.0001"/>
+                            <Slider Orientation="Vertical" Margin="25 10" Maximum="1" Minimum="0" Value="{x:Bind viewModel.FFTArray[1], Mode=OneWay}" StepFrequency="0.0001"/>
+                            <Slider Orientation="Vertical" Margin="25 10" Maximum="1" Minimum="0" Value="{x:Bind viewModel.FFTArray[2], Mode=OneWay}" StepFrequency="0.0001"/>
+                            <Slider Orientation="Vertical" Margin="25 10" Maximum="1" Minimum="0" Value="{x:Bind viewModel.FFTArray[3], Mode=OneWay}" StepFrequency="0.0001"/>
+                            <Slider Orientation="Vertical" Margin="25 10" Maximum="1" Minimum="0" Value="{x:Bind viewModel.FFTArray[4], Mode=OneWay}" StepFrequency="0.0001"/>
+                            <Slider Orientation="Vertical" Margin="25 10" Maximum="1" Minimum="0" Value="{x:Bind viewModel.FFTArray[5], Mode=OneWay}" StepFrequency="0.0001"/>
 
-                            <Slider Orientation="Horizontal"
-                                    Maximum="{x:Bind viewModel.TotalTime, Mode=OneWay}"
-                                    Value="{x:Bind viewModel.NowTime, Mode=TwoWay}"
-                                    PointerEntered="Slider_PointerEntered"
-                                    PointerExited="Slider_PointerExited" 
-                                    IsThumbToolTipEnabled="False"
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center"/>
 
-                            <TextBlock Width="60" Text="{x:Bind viewModel.TotalTimeString, Mode=OneWay}"
-                                       HorizontalAlignment="Center"
-                                       HorizontalTextAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Style="{ThemeResource BaseTextBlockStyle}"
-                                       Grid.Column="2"/>
+                        </StackPanel>
+                        
+                        
+                        <StackPanel Grid.Row="1"
+                                    HorizontalAlignment="Stretch">
 
-                        </Grid>
+                            <TextBlock Text="{x:Bind viewModel.MusicName, Mode=OneWay}"
+                                       Margin="30 20"
+                                       Style="{ThemeResource TitleTextBlockStyle}"/>
 
-                        <Grid Margin="20 10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                            <Grid HorizontalAlignment="Stretch" Margin="20 0">
 
-                            <Button Command="{x:Bind viewModel.PreviousCommand}" Margin="10" Padding="10" Grid.Column="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                                <SymbolIcon Symbol="Previous"/>
+                                <TextBlock Width="60" Text="{x:Bind viewModel.CurrentTimeString, Mode=OneWay}"
+                                           Style="{ThemeResource BaseTextBlockStyle}"
+                                           HorizontalAlignment="Center"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Grid.Column="0"/>
 
-                            </Button>
+                                <Slider Orientation="Horizontal"
+                                        Maximum="{x:Bind viewModel.TotalTime, Mode=OneWay}"
+                                        Value="{x:Bind viewModel.NowTime, Mode=TwoWay}"
+                                        PointerEntered="Slider_PointerEntered"
+                                        PointerExited="Slider_PointerExited" 
+                                        IsThumbToolTipEnabled="False"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"/>
 
-                            <Button Command="{x:Bind viewModel.PlayMusicCommand}" Margin="10" Padding="10" Grid.Column="1">
+                                <TextBlock Width="60" Text="{x:Bind viewModel.TotalTimeString, Mode=OneWay}"
+                                           HorizontalAlignment="Center"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Style="{ThemeResource BaseTextBlockStyle}"
+                                           Grid.Column="2"/>
 
-                                <SymbolIcon Symbol="{x:Bind viewModel.PlayPauseSymbol, Mode=OneWay}"/>
+                            </Grid>
 
-                            </Button>
+                            <Grid Margin="20 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                            <Button Command="{x:Bind viewModel.NextCommand}" Margin="10" Padding="10" Grid.Column="2">
+                                <Button Command="{x:Bind viewModel.PreviousCommand}" Margin="10" Padding="10" Grid.Column="0">
 
-                                <SymbolIcon Symbol="Next"/>
+                                    <SymbolIcon Symbol="Previous"/>
 
-                            </Button>
+                                </Button>
 
-                            <SymbolIcon Symbol="Volume" Grid.Column="4" Margin="10"
-                                        ToolTipService.ToolTip="Volume"/>
+                                <Button Command="{x:Bind viewModel.PlayMusicCommand}" Margin="10" Padding="10" Grid.Column="1">
 
-                            <Slider Orientation="Horizontal" Width="100" Grid.Column="5"
-                                    Value="{x:Bind viewModel.Volume, Mode=TwoWay}"
-                                    VerticalAlignment="Center" Margin="10"/>
+                                    <SymbolIcon Symbol="{x:Bind viewModel.PlayPauseSymbol, Mode=OneWay}"/>
 
-                        </Grid>
+                                </Button>
 
-                    </StackPanel>
+                                <Button Command="{x:Bind viewModel.NextCommand}" Margin="10" Padding="10" Grid.Column="2">
+
+                                    <SymbolIcon Symbol="Next"/>
+
+                                </Button>
+
+                                <SymbolIcon Symbol="Volume" Grid.Column="4" Margin="10"
+                                            ToolTipService.ToolTip="Volume"/>
+
+                                <Slider Orientation="Horizontal" Width="100" Grid.Column="5"
+                                        Value="{x:Bind viewModel.Volume, Mode=TwoWay}"
+                                        VerticalAlignment="Center" Margin="10"/>
+
+                            </Grid>
+
+                        </StackPanel>
+                        
+                    </Grid>
 
                 </SplitView.Content>
                 
@@ -244,7 +267,9 @@
                            Text="{x:Bind viewModel.StatusText, Mode=OneWay}"/>
                 
             </Border>
-            
+
+            <TextBlock Grid.Row="1" Text="{x:Bind viewModel.FFTString, Mode=OneWay}"/>
+
         </Grid>
         
     </Grid>

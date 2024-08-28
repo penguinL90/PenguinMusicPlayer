@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.UI.Xaml;
@@ -12,6 +15,8 @@ namespace Penguin690_sMusicPlayer.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
+        private SynchronizationContext synchronization;
+
         private readonly nint hwnd;
 
         public MusicPlayer Player;
@@ -96,7 +101,6 @@ namespace Penguin690_sMusicPlayer.ViewModels
         }
 
         private MusicFile selectFile;
-
         public MusicFile SelectFile
         {
             get { return selectFile; }
@@ -108,7 +112,6 @@ namespace Penguin690_sMusicPlayer.ViewModels
         }
 
         private int volume;
-
         public int Volume
         {
             get { return volume; }
@@ -120,6 +123,28 @@ namespace Penguin690_sMusicPlayer.ViewModels
             }
         }
 
+        private string _FFTString;
+        public string FFTString
+        {
+            get { return _FFTString; }
+            set 
+            {
+                _FFTString = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        private ObservableCollection<double> _FFTArray;
+        public ObservableCollection<double> FFTArray
+        {
+            get => _FFTArray;
+            set
+            {
+                _FFTArray = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         public RelayCommand AddMusicCommand;
         public RelayCommand PlayMusicCommand;
@@ -127,6 +152,8 @@ namespace Penguin690_sMusicPlayer.ViewModels
         public RelayCommand NextCommand;
         public MainWindowViewModel(nint _hwnd)
         {
+            synchronization = SynchronizationContext.Current;
+
             hwnd = _hwnd;
             Status = new(StatusUpdate);
             Player = new(Status, hwnd);
@@ -136,6 +163,7 @@ namespace Penguin690_sMusicPlayer.ViewModels
             Player.ControlStatusChangedEvent += SetControlStatus;
             Player.MusicSet += Player_MusicSet;
             Player.PlayPauseChanged += Player_PlayPauseChanged;
+            Player.FFTUpdate += FFTUpdate;
 
             PlayMusicCommand = new(PlayPause, () => Player.ControlStatus.PlayPause);
             PreviousCommand = new(Player.Previous, () => Player.ControlStatus.Previous);
@@ -207,5 +235,13 @@ namespace Penguin690_sMusicPlayer.ViewModels
         }
 
         public bool NullableBool2Bool(bool? value) => value ?? false;
+
+        public void FFTUpdate(object sender, FFTUpdateEventArgs e)
+        {
+            synchronization.Post(_ =>
+            {
+                FFTArray = new(e.Frequencies);
+            }, null);
+        }
     }
 }
