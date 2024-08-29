@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using MathNet.Numerics;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Penguin690_sMusicPlayer.Models;
 
@@ -130,11 +131,11 @@ internal class MusicPlayer : IStatusSender
                 OnMusicSet();
                 return true;
             }
-            catch
+            catch (Exception ex) 
             {
                 AudioFileReader = null;
                 ControlStatus = new(false, false, false);
-                StatusUpdate("This file can't be played");
+                StatusUpdate($"This file can't be played, Error: {ex.Message}");
                 return false;
             }
             finally
@@ -316,7 +317,10 @@ internal class MusicPlayer : IStatusSender
         });
     }
 
-
+    public int GetFFTCount()
+    {
+        return fftwaver.selectFrequenciesCount;
+    }
 
     #endregion
 }

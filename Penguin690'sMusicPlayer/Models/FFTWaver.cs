@@ -8,6 +8,7 @@ using MathNet.Numerics.IntegralTransforms;
 using MathNet.Numerics;
 using NAudio.Wave;
 using System.IO;
+using System.Diagnostics;
 
 namespace Penguin690_sMusicPlayer.Models
 {
@@ -15,19 +16,19 @@ namespace Penguin690_sMusicPlayer.Models
     {
         private readonly int maxFrequency = 2500;
         private readonly int minFrequency = 65;
-        private readonly int selectFrequenciesCount = 6;
-        private int sampleCount = 1024;
+        public readonly int selectFrequenciesCount = 25;
+        private int sampleCount = 2048;
         private int frequencySapn;
-        private int bytePreSample;
+        private int bytePreSamplePreChannel;
         private int sampleRate;
         private int normalizeConst;
+        private int channels;
         private double[] window;
         private Complex[] readInComplexs;
         private Func<double> readFunction;
 
-
+        private MemoryStream stream;
         private BinaryReader reader;
-        private WaveStream stream;
 
         public FFTWaver()
         {
@@ -39,22 +40,22 @@ namespace Penguin690_sMusicPlayer.Models
 
         public void SetMusic(MusicFile file)
         {
-            if (reader != null)
-            {
-                reader.Dispose();
-            }
-            if (stream != null)
-            {
-                stream.Dispose();
-            }
-            AudioFileReader _reader = new(file.FullPath);
-            stream = _reader;
+            stream?.Dispose();
+            reader?.Dispose();
+
+            AudioFileReader _stream = new(file.FullPath);
+
+            stream = new();
+            _stream.CopyTo(stream);
+
             reader = new(stream);
-            bytePreSample = _reader.WaveFormat.BitsPerSample / 8;
-            sampleRate = _reader.WaveFormat.SampleRate;
-            normalizeConst = (int)Math.Pow(2, _reader.WaveFormat.BitsPerSample - 7);
-            readFunction = null;
-            switch (bytePreSample)
+
+            sampleRate = _stream.WaveFormat.SampleRate;
+            channels = _stream.WaveFormat.Channels;
+            bytePreSamplePreChannel = _stream.WaveFormat.BitsPerSample / 8 / channels;
+
+            normalizeConst = (int)Math.Pow(2, _stream.WaveFormat.BitsPerSample / channels - 8);
+            switch (bytePreSamplePreChannel)
             {
                 case 1:
                     readFunction = () => reader.ReadByte();
@@ -68,28 +69,21 @@ namespace Penguin690_sMusicPlayer.Models
                 default:
                     return;
             }
+            _stream.Dispose();
         }
 
         public double[] CountFFT(long pos)
         {
             double[] outputFrequencies = new double[selectFrequenciesCount];
-            try
+            ReadData(pos);
+            Fourier.Forward(readInComplexs);
+            for (int i = 0; i < selectFrequenciesCount; i++)
             {
-                ReadData(pos);
-                Fourier.Forward(readInComplexs);
-                for (int i = 0; i < selectFrequenciesCount; i++)
-                {
-                    double selectFrequency = minFrequency + frequencySapn * i;
-                    int fftIndex = (int)(selectFrequency * sampleCount / sampleRate);
-                    fftIndex = Math.Min(fftIndex, sampleRate / 2);
-                    outputFrequencies[i] = readInComplexs[fftIndex].Magnitude * 2 / sampleCount;
-                }
+                double selectFrequency = minFrequency + frequencySapn * i;
+                int fftIndex = (int)(selectFrequency * sampleCount / sampleRate);
+                fftIndex = Math.Min(fftIndex, sampleRate / 2);
+                outputFrequencies[i] = readInComplexs[fftIndex].Magnitude * 2 / sampleCount;
             }
-            catch
-            {
-                Array.Fill(outputFrequencies, 0);
-            }
-            
             return outputFrequencies;
         }
 
@@ -97,17 +91,27 @@ namespace Penguin690_sMusicPlayer.Models
         {
             readInComplexs = new Complex[sampleCount];
             stream.Position = pos;
-            int min = (int)Math.Min(stream.Length - pos - 1, sampleCount);
+            int min = (int)Math.Min((stream.Length - pos) / (bytePreSamplePreChannel * channels), sampleCount);
             for (int i = 0; i < min; i++)
             {
-                readInComplexs[i] = new(readFunction() * window[i] / normalizeConst, 0);
+                double d = 0;
+
+                for (int j = 0; j < channels; j++)
+                {
+                    d += readFunction();
+                }
+
+                d /= channels;
+
+                readInComplexs[i] = new(d * window[i] / normalizeConst, 0);
+
             }
         }
 
         public void Dispose()
         {
-            reader.Dispose();
             stream.Dispose();
+            reader.Dispose();
         }
     }
 }

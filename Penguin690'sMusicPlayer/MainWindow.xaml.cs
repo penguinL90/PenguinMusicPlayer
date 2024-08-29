@@ -20,6 +20,7 @@ using WinRT.Interop;
 using Microsoft.UI;
 using Microsoft.VisualBasic.Devices;
 using Windows.Devices.Input;
+using Microsoft.Graphics.Canvas;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -42,10 +43,11 @@ namespace Penguin690_sMusicPlayer
 
             this.InitializeComponent();
 
-            viewModel = new(hwnd);
+            viewModel = new(hwnd, canvasCtrl);
             ExtendsContentIntoTitleBar = true;
             AppBarTitle.Loaded += AppBarTitle_Loaded;
             AppBarTitle.SizeChanged += AppBarTitle_SizeChanged;
+            canvasCtrl.Invalidate();
         }
 
         private void AppBarTitle_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -87,6 +89,20 @@ namespace Penguin690_sMusicPlayer
         {
             long pos = (long)(sender as Slider).Value;
             viewModel.SliderPointPress(pos);
+        }
+
+        private void canvasCtrl_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args)
+        {
+            CanvasDrawingSession drawer = args.DrawingSession;
+            drawer.Clear(Colors.Transparent);
+
+            if (viewModel._FFTArray == null) return;
+            for (int i = 0; i < viewModel._FFTArray.Length; ++i)
+            {
+                double x = i * 15;
+                double height = viewModel._FFTArray[i] * 150;
+                drawer.FillRectangle(new Rect(x, 100 - height, 10, height), Colors.AliceBlue);
+            }
         }
     }
 }

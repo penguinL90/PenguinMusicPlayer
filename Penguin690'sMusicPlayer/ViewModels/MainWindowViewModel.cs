@@ -7,9 +7,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Penguin690_sMusicPlayer.Models;
+using Windows.Foundation;
 
 namespace Penguin690_sMusicPlayer.ViewModels
 {
@@ -134,23 +138,14 @@ namespace Penguin690_sMusicPlayer.ViewModels
             }
         }
 
-        private ObservableCollection<double> _FFTArray;
-        public ObservableCollection<double> FFTArray
-        {
-            get => _FFTArray;
-            set
-            {
-                _FFTArray = value;
-                OnPropertyChanged();
-            }
-        }
-
+        public double[] _FFTArray;
+        private readonly CanvasControl _FFTCanvasControl;   
 
         public RelayCommand AddMusicCommand;
         public RelayCommand PlayMusicCommand;
         public RelayCommand PreviousCommand;
         public RelayCommand NextCommand;
-        public MainWindowViewModel(nint _hwnd)
+        public MainWindowViewModel(nint _hwnd, CanvasControl fftcanvactrl)
         {
             synchronization = SynchronizationContext.Current;
 
@@ -169,6 +164,10 @@ namespace Penguin690_sMusicPlayer.ViewModels
             PreviousCommand = new(Player.Previous, () => Player.ControlStatus.Previous);
             NextCommand = new(Player.Next, () => Player.ControlStatus.Next);
             AddMusicCommand = new(Player.PlayList.AddMusic);
+
+            _FFTCanvasControl = fftcanvactrl;
+            _FFTCanvasControl.Measure(new Size(Player.GetFFTCount() * 15, 200));
+            _FFTCanvasControl.Arrange(new(0, 0, Player.GetFFTCount() * 15, 200));
         }
 
         private void Player_PlayPauseChanged(object sender, PlayPauseChangedEventArgs e)
@@ -238,10 +237,8 @@ namespace Penguin690_sMusicPlayer.ViewModels
 
         public void FFTUpdate(object sender, FFTUpdateEventArgs e)
         {
-            synchronization.Post(_ =>
-            {
-                FFTArray = new(e.Frequencies);
-            }, null);
+            _FFTArray = e.Frequencies;
+            _FFTCanvasControl.Invalidate();
         }
     }
 }
