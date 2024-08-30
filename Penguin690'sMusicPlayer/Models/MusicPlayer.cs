@@ -1,22 +1,10 @@
 ﻿using Microsoft.UI.Xaml;
-using NAudio.Utils;
 using NAudio.Wave;
 using System;
 using System.Threading;
-using System.Numerics;
-using MathNet.Numerics.IntegralTransforms;
 using System.Threading.Tasks;
-using System.Linq;
-using MathNet.Numerics;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Penguin690_sMusicPlayer.Models;
-
-internal class AudioFileReader2(MusicFile file) : AudioFileReader(file.FullPath)
-{
-    public MusicFile musicFile = file;
-}
 
 #nullable enable
 #pragma warning disable CS8618
@@ -36,17 +24,17 @@ internal class MusicPlayer : IStatusSender
 
     public event EventHandler<FFTUpdateEventArgs> FFTUpdate;
 
-    private WaveOutEvent Player;
-
     private AudioFileReader2? AudioFileReader;
+
+    private readonly WaveOutEvent Player;
 
     private readonly object _lock = new object();
 
     private readonly int timerIntervalMillisec = 16;
 
-    private DispatcherTimer timer;
+    private readonly DispatcherTimer timer;
 
-    private FFTWaver fftwaver;
+    private readonly FFTWaver fftwaver;
 
     public MusicPlayer(Status status, nint hwnd)
     {
@@ -54,7 +42,7 @@ internal class MusicPlayer : IStatusSender
 
         Player = new();
         PlayList = new(status, hwnd);
-        fftwaver = new();
+        fftwaver = new(status);
         timer = new()
         {
             Interval = TimeSpan.FromMilliseconds(timerIntervalMillisec)
@@ -83,27 +71,20 @@ internal class MusicPlayer : IStatusSender
 
     #endregion
 
-    public void OnControlStatusChanged()
-    {
+    #region event invoke
+    public void OnControlStatusChanged() =>
         ControlStatusChangedEvent?.Invoke(this, new());
-    }
 
-    public void OnMusicSet()
-    {
+    public void OnMusicSet() => 
         MusicSet?.Invoke(this, new(AudioFileReader!.TotalTime, AudioFileReader!.Length, AudioFileReader!.musicFile));
-    }
 
-    public void OnPlayPauseChanged(PlayStatus status)
-    {
+    public void OnPlayPauseChanged(PlayStatus status) => 
         PlayPauseChanged?.Invoke(this, new(status));
-    }
+    #endregion
 
     #region essential controls
 
-    public void SetVolume(double volume)
-    {
-        Player.Volume = (float)volume;
-    }
+    public void SetVolume(double volume) => Player.Volume = (float)volume;
 
     /// <summary>
     /// 設定播放器的音樂
@@ -317,10 +298,7 @@ internal class MusicPlayer : IStatusSender
         });
     }
 
-    public int GetFFTCount()
-    {
-        return fftwaver.selectFrequenciesCount;
-    }
+    public int GetFFTCount() => fftwaver.selectFrequenciesCount;
 
     #endregion
 }
@@ -346,6 +324,11 @@ internal class MusicSetEventArgs(TimeSpan totalTimeSpanTime, long totalTime, Mus
 internal class PlayPauseChangedEventArgs(PlayStatus status) : EventArgs
 {
     public PlayStatus Status = status;
+}
+
+internal class AudioFileReader2(MusicFile file) : AudioFileReader(file.FullPath)
+{
+    public MusicFile musicFile = file;
 }
 
 internal class FFTUpdateEventArgs(double[] frequencies) : EventArgs
