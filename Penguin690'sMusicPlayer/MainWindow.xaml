@@ -32,12 +32,9 @@
                 <ColumnDefinition x:Name="cRightPadding" Width="0"/>
                 
             </Grid.ColumnDefinitions>
-            
-            <SymbolIcon Symbol="MusicInfo" 
-                        Grid.Column="1" 
-                        Width="32" 
-                        Height="32"/>
-            
+
+            <Image Grid.Column="1" Source="hmmlogo.png" Height="16" Width="16" Margin="8 0"/>
+
             <TextBlock Text="Penguin Music Player" 
                        Grid.Column="2"
                        VerticalAlignment="Center"
@@ -93,12 +90,6 @@
                         <MenuFlyoutItem Text="Move upper one" Command="{x:Bind viewModel.MoveUpperCommand}"/>
 
                         <MenuFlyoutItem Text="Move lower one" Command="{x:Bind viewModel.MoveLowerCommand}"/>
-
-                    </MenuBarItem>
-
-                    <MenuBarItem Title="Help">
-
-                        <MenuFlyoutItem Text="Version information"/>
 
                     </MenuBarItem>
 
@@ -255,12 +246,20 @@
             <Border Grid.Row="4" 
                     Grid.ColumnSpan="2"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-                
-                <TextBlock VerticalAlignment="Center"
-                           Style="{ThemeResource BaseTextBlockStyle}"
-                           Margin="10 0"
-                           Text="{x:Bind viewModel.StatusText, Mode=OneWay}"/>
-                
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock VerticalAlignment="Center"
+                               Style="{ThemeResource BaseTextBlockStyle}"
+                               Margin="10 0"
+                               Text="{x:Bind viewModel.StatusText, Mode=OneWay}"/>
+
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" x:Name="VersionTxt" FontFamily="Consolas" Style="{ThemeResource BaseTextBlockStyle}" Margin="10 0"/>
+                </Grid>
             </Border>
 
         </Grid>

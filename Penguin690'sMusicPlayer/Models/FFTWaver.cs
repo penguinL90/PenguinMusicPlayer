@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Numerics;
-using System.Threading.Tasks;
 using MathNet.Numerics.IntegralTransforms;
 using MathNet.Numerics;
 using NAudio.Wave;
 using System.IO;
-using System.Diagnostics;
 
 namespace Penguin690_sMusicPlayer.Models;
 
 internal class FFTWaver : IDisposable, IStatusSender
 {
-    private readonly int maxFrequency = 2525;
-    private readonly int minFrequency = 50;
-    public readonly int selectFrequenciesCount = 100;
+    private readonly int maxFrequency = 5000;
+    private readonly int minFrequency = 60;
+    public readonly int selectFrequenciesCount = 77;
     public readonly int[] FrequencyQuartiles;
     private int sampleCount = 2048;
     private int frequencySapn;
@@ -93,7 +88,6 @@ internal class FFTWaver : IDisposable, IStatusSender
                 return;
         }
         _stream.Dispose();
-        StatusUpdate($"FFTWaver Setup successful; sampleCount: {sampleCount}, maxFreq: {maxFrequency}, minFreq: {minFrequency}");
     }
 
     public double[] CountFFT(long pos)
@@ -136,5 +130,8 @@ internal class FFTWaver : IDisposable, IStatusSender
     {
         stream.Dispose();
         reader.Dispose();
+        stream = null;
+        reader = null;
+        GC.Collect();
     }
 }

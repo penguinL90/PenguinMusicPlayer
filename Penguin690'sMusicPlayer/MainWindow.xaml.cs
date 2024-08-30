@@ -1,27 +1,8 @@
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Windowing;
-using System.Windows.Input;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Penguin690_sMusicPlayer.Models;
+using Windows.ApplicationModel;
 using Penguin690_sMusicPlayer.ViewModels;
 using WinRT.Interop;
-using Microsoft.UI;
-using Windows.ApplicationModel.DataTransfer;
-using Microsoft.VisualBasic.Devices;
-using Windows.Devices.Input;
-using Microsoft.Graphics.Canvas;
 
 
 // To learn more about WinUI, the WinUI project structure,
@@ -48,6 +29,8 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         AppBarTitle.Loaded += AppBarTitle_Loaded;
         AppBarTitle.SizeChanged += AppBarTitle_SizeChanged;
+        PackageVersion version = Package.Current.Id.Version;
+        VersionTxt.Text = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
 
     private void AppBarTitle_SizeChanged(object sender, SizeChangedEventArgs e)

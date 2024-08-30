@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.Graphics.Canvas.Text;
@@ -17,8 +9,6 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Penguin690_sMusicPlayer.Models;
 using Windows.Foundation;
-using Windows.Media.Playlists;
-using System.Drawing;
 
 namespace Penguin690_sMusicPlayer.ViewModels;
 
@@ -123,6 +113,7 @@ internal class MainWindowViewModel : ViewModelBase
     }
 
     public double[] _FFTArray;
+    private double[] _FFTDropSpeed;
 
     private CanvasControl _FFTCanvasControl;
 
@@ -152,6 +143,10 @@ internal class MainWindowViewModel : ViewModelBase
         Player = new(Status, hwnd);
         Volume = 50;
 
+        _FFTArray = new double[Player.GetFFTCount()];
+        _FFTDropSpeed = new double[Player.GetFFTCount()];
+        Array.Fill(_FFTArray, 1);
+
         Player.TimebarChanged += Player_TimebarChanged;
         Player.ControlStatusChangedEvent += SetControlStatus;
         Player.MusicSet += Player_MusicSet;
@@ -163,7 +158,7 @@ internal class MainWindowViewModel : ViewModelBase
         NextCommand = new(Player.Next, () => Player.ControlStatus.Next);
         AddMusicCommand = new(Player.PlayList.AddMusic);
 
-        DeleteCommand = new(() => Player.PlayList.Remove(SelectFile), () => SelectFile != null);
+        DeleteCommand = new(() => Player.Remove(SelectFile), () => SelectFile != null);
         MoveUpperCommand = new(() => Player.PlayList.MoveUpperOne(SelectFile), () => SelectFile != null);
         MoveLowerCommand = new(() => Player.PlayList.MoveLowerOne(SelectFile), () => SelectFile != null);
 
@@ -199,12 +194,16 @@ internal class MainWindowViewModel : ViewModelBase
             CanvasDrawingSession drawer = e.DrawingSession;
             drawer.Clear(Colors.Transparent);
             int fontHeight = 20;
-
-            if (_FFTArray == null) return;
+            double dropRate = 0.025;
             for (int i = 0; i < _FFTArray.Length; ++i)
             {
                 double x = i * 10;
                 double height = _FFTArray[i] * 150;
+                if (_FFTArray[i] - dropRate > 0)
+                {
+                    _FFTArray[i] -= dropRate;
+                }
+                else _FFTArray[i] = 0.01;
                 drawer.FillRectangle(new Rect(x, _FFTCanvasControl.Height - height - fontHeight, 8, height), Colors.AliceBlue);
             }
             int[] fftquartiles = Player.GetFFTQuartiles();
@@ -257,8 +256,16 @@ internal class MainWindowViewModel : ViewModelBase
     {
         TotalTime = e.TotalTime;
         TotalTimeTimeSpan = e.TotalTimeSpanTime;
-        MusicName = e.File.ShortPath;
-        SelectFile = e.File;
+        if (e.File != null)
+        {
+            MusicName = e.File.ShortPath;
+            SelectFile = e.File;
+        }
+        else
+        {
+            MusicName = "";
+            CurrentTimeTimeSpan = TimeSpan.Zero;
+        }
     }
 
     private void Player_TimebarChanged(object sender, TimebarChangedEventArgs e)
@@ -297,7 +304,10 @@ internal class MainWindowViewModel : ViewModelBase
 
     public void FFTUpdate(object sender, FFTUpdateEventArgs e)
     {
-        _FFTArray = e.Frequencies;
+        if (e.Frequencies != null)
+        {
+            _FFTArray = e.Frequencies;
+        }
         _FFTCanvasControl.Invalidate();
     }
 }
