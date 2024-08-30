@@ -14,8 +14,8 @@ namespace Penguin690_sMusicPlayer.Models
 {
     internal class FFTWaver : IDisposable
     {
-        private readonly int maxFrequency = 6000;
-        private readonly int minFrequency = 65;
+        private readonly int maxFrequency = 2525;
+        private readonly int minFrequency = 50;
         public readonly int selectFrequenciesCount = 100;
         private int sampleCount = 2048;
         private int frequencySapn;
@@ -79,7 +79,7 @@ namespace Penguin690_sMusicPlayer.Models
             for (int i = 0; i < selectFrequenciesCount; i++)
             {
                 double selectFrequency = minFrequency + frequencySapn * i;
-                int fftIndex = (int)(selectFrequency * sampleCount / sampleRate);
+                int fftIndex = (int)(selectFrequency * sampleCount / sampleRate) * 4;
                 fftIndex = Math.Min(fftIndex, sampleRate / 2);
                 outputFrequencies[i] = readInComplexs[fftIndex].Magnitude * 2 / sampleCount;
             }

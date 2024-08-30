@@ -43,7 +43,7 @@ namespace Penguin690_sMusicPlayer
 
             this.InitializeComponent();
 
-            viewModel = new(hwnd, canvasCtrl);
+            viewModel = new(hwnd);
             ExtendsContentIntoTitleBar = true;
             AppBarTitle.Loaded += AppBarTitle_Loaded;
             AppBarTitle.SizeChanged += AppBarTitle_SizeChanged;

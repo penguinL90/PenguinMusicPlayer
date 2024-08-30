@@ -22,8 +22,6 @@ namespace Penguin690_sMusicPlayer.ViewModels
 {
     internal class MainWindowViewModel : ViewModelBase
     {
-        private SynchronizationContext synchronization;
-
         private readonly nint hwnd;
 
         public MusicPlayer Player;
@@ -130,36 +128,25 @@ namespace Penguin690_sMusicPlayer.ViewModels
             }
         }
 
-        private string _FFTString;
-        public string FFTString
-        {
-            get { return _FFTString; }
-            set 
-            {
-                _FFTString = value; 
-                OnPropertyChanged();
-            }
-        }
-
         public double[] _FFTArray;
 
-        private readonly CanvasControl _FFTCanvasControl;
+        private CanvasControl _FFTCanvasControl;
 
         public DoubleTappedEventHandler ListView_DoubleTapped;
         public PointerEventHandler Slider_PointerEntered;
         public PointerEventHandler Slider_PointerExited;   
         public RangeBaseValueChangedEventHandler Slider_ValueChanged;
         public TypedEventHandler<CanvasControl, CanvasDrawEventArgs> canvasCtrl_Draw;
+        public RoutedEventHandler canvasCtrl_Loaded;
+        public RoutedEventHandler canvasCtrl_Unloaded;
 
         public RelayCommand AddMusicCommand;
         public RelayCommand PlayMusicCommand;
 
         public RelayCommand PreviousCommand;
         public RelayCommand NextCommand;
-        public MainWindowViewModel(nint _hwnd, CanvasControl fftcanvactrl)
+        public MainWindowViewModel(nint _hwnd)
         {
-            synchronization = SynchronizationContext.Current;
-
             hwnd = _hwnd;
             Status = new(StatusUpdate);
             Player = new(Status, hwnd);
@@ -176,6 +163,15 @@ namespace Penguin690_sMusicPlayer.ViewModels
             NextCommand = new(Player.Next, () => Player.ControlStatus.Next);
             AddMusicCommand = new(Player.PlayList.AddMusic);
 
+
+            canvasCtrl_Loaded = (s, e) =>
+            {
+                _FFTCanvasControl = s as CanvasControl;
+                _FFTCanvasControl.Height = 500;
+                _FFTCanvasControl.Width = Player.GetFFTCount() * 10;
+                _FFTCanvasControl.Measure(new Size(Player.GetFFTCount() * 10, _FFTCanvasControl.Height));
+                _FFTCanvasControl.Arrange(new(0, 0, Player.GetFFTCount() * 10, _FFTCanvasControl.Height));
+            };
             ListView_DoubleTapped = (s, e) =>
             {
                 SetMusic((s as ListView).SelectedItem as MusicFile);
@@ -205,14 +201,9 @@ namespace Penguin690_sMusicPlayer.ViewModels
                 {
                     double x = i * 10;
                     double height = _FFTArray[i] * 150;
-                    drawer.FillRectangle(new Rect(x, 100 - height, 8, height), Colors.AliceBlue);
+                    drawer.FillRectangle(new Rect(x, _FFTCanvasControl.Height - height, 8, height), Colors.AliceBlue);
                 }
-            };
-            _FFTCanvasControl = fftcanvactrl;
-            _FFTCanvasControl.Height = 300;
-            _FFTCanvasControl.Width = Player.GetFFTCount() * 10;
-            _FFTCanvasControl.Measure(new Size(Player.GetFFTCount() * 10, 300));
-            _FFTCanvasControl.Arrange(new(0, 0, Player.GetFFTCount() * 10, 300));
+            };    
         }
 
         private void Player_PlayPauseChanged(object sender, PlayPauseChangedEventArgs e)

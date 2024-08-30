@@ -159,11 +159,12 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <canva:CanvasControl Margin="0 0" 
+                        <canva:CanvasControl Margin="0 0 0 50" 
                                              HorizontalAlignment="Center" 
                                              x:Name="canvasCtrl" 
                                              Draw="{x:Bind viewModel.canvasCtrl_Draw}"
-                                             VerticalAlignment="Bottom"/>
+                                             VerticalAlignment="Bottom"
+                                             Loaded="{x:Bind viewModel.canvasCtrl_Loaded}"/>
 
                         <StackPanel Grid.Row="1" Grid.Column="0"
                                     HorizontalAlignment="Stretch">
@@ -260,8 +261,6 @@
                            Text="{x:Bind viewModel.StatusText, Mode=OneWay}"/>
                 
             </Border>
-
-            <TextBlock Grid.Row="1" Text="{x:Bind viewModel.FFTString, Mode=OneWay}"/>
 
         </Grid>
         
