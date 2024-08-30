@@ -12,8 +12,11 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
 using Penguin690_sMusicPlayer.Models;
 using Windows.Foundation;
+using Windows.Media.Playlists;
 
 namespace Penguin690_sMusicPlayer.ViewModels
 {
@@ -139,10 +142,18 @@ namespace Penguin690_sMusicPlayer.ViewModels
         }
 
         public double[] _FFTArray;
-        private readonly CanvasControl _FFTCanvasControl;   
+
+        private readonly CanvasControl _FFTCanvasControl;
+
+        public DoubleTappedEventHandler ListView_DoubleTapped;
+        public PointerEventHandler Slider_PointerEntered;
+        public PointerEventHandler Slider_PointerExited;   
+        public RangeBaseValueChangedEventHandler Slider_ValueChanged;
+        public TypedEventHandler<CanvasControl, CanvasDrawEventArgs> canvasCtrl_Draw;
 
         public RelayCommand AddMusicCommand;
         public RelayCommand PlayMusicCommand;
+
         public RelayCommand PreviousCommand;
         public RelayCommand NextCommand;
         public MainWindowViewModel(nint _hwnd, CanvasControl fftcanvactrl)
@@ -165,9 +176,43 @@ namespace Penguin690_sMusicPlayer.ViewModels
             NextCommand = new(Player.Next, () => Player.ControlStatus.Next);
             AddMusicCommand = new(Player.PlayList.AddMusic);
 
+            ListView_DoubleTapped = (s, e) =>
+            {
+                SetMusic((s as ListView).SelectedItem as MusicFile);
+            };
+            Slider_PointerEntered = (s, e) =>
+            {
+                (s as Slider).ValueChanged += Slider_ValueChanged;
+                SliderPointerIn();
+            };
+            Slider_PointerExited = (s, e) =>
+            {
+                (s as Slider).ValueChanged -= Slider_ValueChanged;
+                SliderPointerOut();
+            };
+            Slider_ValueChanged = (s, e) =>
+            {
+                long pos = (long)(s as Slider).Value;
+                SliderPointPress(pos);
+            };
+            canvasCtrl_Draw = (s, e) =>
+            {
+                CanvasDrawingSession drawer = e.DrawingSession;
+                drawer.Clear(Colors.Transparent);
+
+                if (_FFTArray == null) return;
+                for (int i = 0; i < _FFTArray.Length; ++i)
+                {
+                    double x = i * 10;
+                    double height = _FFTArray[i] * 150;
+                    drawer.FillRectangle(new Rect(x, 100 - height, 8, height), Colors.AliceBlue);
+                }
+            };
             _FFTCanvasControl = fftcanvactrl;
-            _FFTCanvasControl.Measure(new Size(Player.GetFFTCount() * 15, 200));
-            _FFTCanvasControl.Arrange(new(0, 0, Player.GetFFTCount() * 15, 200));
+            _FFTCanvasControl.Height = 300;
+            _FFTCanvasControl.Width = Player.GetFFTCount() * 10;
+            _FFTCanvasControl.Measure(new Size(Player.GetFFTCount() * 10, 300));
+            _FFTCanvasControl.Arrange(new(0, 0, Player.GetFFTCount() * 10, 300));
         }
 
         private void Player_PlayPauseChanged(object sender, PlayPauseChangedEventArgs e)

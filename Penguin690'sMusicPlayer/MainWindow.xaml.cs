@@ -67,42 +67,5 @@ namespace Penguin690_sMusicPlayer
             cLeftPadding.Width = new(AppWindow.TitleBar.LeftInset / scale);
             cRightPadding.Width = new(AppWindow.TitleBar.RightInset / scale);
         }
-
-        private void ListView_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            viewModel.SetMusic(playlist.SelectedItem as MusicFile);
-        }
-
-        private void Slider_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            (sender as Slider).ValueChanged += Slider_ValueChanged;
-            viewModel.SliderPointerIn();
-        }
-
-        private void Slider_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            (sender as Slider).ValueChanged -= Slider_ValueChanged;
-            viewModel.SliderPointerOut();
-        }
-
-        private void Slider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            long pos = (long)(sender as Slider).Value;
-            viewModel.SliderPointPress(pos);
-        }
-
-        private void canvasCtrl_Draw(Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl sender, Microsoft.Graphics.Canvas.UI.Xaml.CanvasDrawEventArgs args)
-        {
-            CanvasDrawingSession drawer = args.DrawingSession;
-            drawer.Clear(Colors.Transparent);
-
-            if (viewModel._FFTArray == null) return;
-            for (int i = 0; i < viewModel._FFTArray.Length; ++i)
-            {
-                double x = i * 15;
-                double height = viewModel._FFTArray[i] * 150;
-                drawer.FillRectangle(new Rect(x, 100 - height, 10, height), Colors.AliceBlue);
-            }
-        }
     }
 }

@@ -14,9 +14,9 @@ namespace Penguin690_sMusicPlayer.Models
 {
     internal class FFTWaver : IDisposable
     {
-        private readonly int maxFrequency = 2500;
+        private readonly int maxFrequency = 6000;
         private readonly int minFrequency = 65;
-        public readonly int selectFrequenciesCount = 25;
+        public readonly int selectFrequenciesCount = 100;
         private int sampleCount = 2048;
         private int frequencySapn;
         private int bytePreSamplePreChannel;
@@ -36,8 +36,6 @@ namespace Penguin690_sMusicPlayer.Models
             window = Window.Hamming(sampleCount);
         }
 
-        public int SelectFrequenciesCount { get; set; }
-
         public void SetMusic(MusicFile file)
         {
             stream?.Dispose();
@@ -54,7 +52,8 @@ namespace Penguin690_sMusicPlayer.Models
             channels = _stream.WaveFormat.Channels;
             bytePreSamplePreChannel = _stream.WaveFormat.BitsPerSample / 8 / channels;
 
-            normalizeConst = (int)Math.Pow(2, _stream.WaveFormat.BitsPerSample / channels - 8);
+            readInComplexs = new Complex[sampleCount * 4];
+            normalizeConst = (int)Math.Pow(2, _stream.WaveFormat.BitsPerSample / channels - 10);
             switch (bytePreSamplePreChannel)
             {
                 case 1:
@@ -89,7 +88,7 @@ namespace Penguin690_sMusicPlayer.Models
 
         private void ReadData(long pos)
         {
-            readInComplexs = new Complex[sampleCount];
+            Array.Fill(readInComplexs, Complex.Zero);
             stream.Position = pos;
             int min = (int)Math.Min((stream.Length - pos) / (bytePreSamplePreChannel * channels), sampleCount);
             for (int i = 0; i < min; i++)

@@ -129,7 +129,7 @@
                               ItemsSource="{x:Bind viewModel.Player.PlayList, Mode=TwoWay}"
                               CanReorderItems="True"
                               CanDragItems="True"
-                              DoubleTapped="ListView_DoubleTapped"
+                              DoubleTapped="{x:Bind viewModel.ListView_DoubleTapped}"
                               SelectedItem="{x:Bind viewModel.SelectFile, Mode=OneWay}"
                               Margin="8">
 
@@ -159,17 +159,17 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <canva:CanvasControl Height="200" Width="500" Margin="0 0" HorizontalAlignment="Center" x:Name="canvasCtrl" Draw="canvasCtrl_Draw">
-
-
-                        </canva:CanvasControl>
-
+                        <canva:CanvasControl Margin="0 0" 
+                                             HorizontalAlignment="Center" 
+                                             x:Name="canvasCtrl" 
+                                             Draw="{x:Bind viewModel.canvasCtrl_Draw}"
+                                             VerticalAlignment="Bottom"/>
 
                         <StackPanel Grid.Row="1" Grid.Column="0"
                                     HorizontalAlignment="Stretch">
 
                             <TextBlock Text="{x:Bind viewModel.MusicName, Mode=OneWay}"
-                                       Margin="30 20"
+                                       Margin="30 0 30 20"
                                        Style="{ThemeResource TitleTextBlockStyle}"/>
 
                             <Grid HorizontalAlignment="Stretch" Margin="20 0">
@@ -190,8 +190,8 @@
                                 <Slider Orientation="Horizontal"
                                         Maximum="{x:Bind viewModel.TotalTime, Mode=OneWay}"
                                         Value="{x:Bind viewModel.NowTime, Mode=TwoWay}"
-                                        PointerEntered="Slider_PointerEntered"
-                                        PointerExited="Slider_PointerExited" 
+                                        PointerEntered="{x:Bind viewModel.Slider_PointerEntered}"
+                                        PointerExited="{x:Bind viewModel.Slider_PointerExited}" 
                                         IsThumbToolTipEnabled="False"
                                         Grid.Column="1"
                                         VerticalAlignment="Center"/>
