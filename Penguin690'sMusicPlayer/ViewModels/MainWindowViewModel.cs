@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,6 +18,7 @@ using Microsoft.UI.Xaml.Input;
 using Penguin690_sMusicPlayer.Models;
 using Windows.Foundation;
 using Windows.Media.Playlists;
+using System.Drawing;
 
 namespace Penguin690_sMusicPlayer.ViewModels;
 
@@ -105,16 +107,8 @@ internal class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private MusicFile selectFile;
-    public MusicFile SelectFile
-    {
-        get { return selectFile; }
-        set 
-        { 
-            selectFile = value; 
-            OnPropertyChanged();
-        }
-    }
+    private MusicFile SelectFile;
+
 
     private int volume;
     public int Volume
@@ -139,12 +133,18 @@ internal class MainWindowViewModel : ViewModelBase
     public TypedEventHandler<CanvasControl, CanvasDrawEventArgs> canvasCtrl_Draw;
     public RoutedEventHandler canvasCtrl_Loaded;
     public RoutedEventHandler canvasCtrl_Unloaded;
+    public SelectionChangedEventHandler SelectionChanged;
 
     public RelayCommand AddMusicCommand;
     public RelayCommand PlayMusicCommand;
 
     public RelayCommand PreviousCommand;
     public RelayCommand NextCommand;
+
+    public RelayCommand DeleteCommand;
+    public RelayCommand MoveUpperCommand;
+    public RelayCommand MoveLowerCommand;
+
     public MainWindowViewModel(nint _hwnd)
     {
         hwnd = _hwnd;
@@ -163,13 +163,16 @@ internal class MainWindowViewModel : ViewModelBase
         NextCommand = new(Player.Next, () => Player.ControlStatus.Next);
         AddMusicCommand = new(Player.PlayList.AddMusic);
 
+        DeleteCommand = new(() => Player.PlayList.Remove(SelectFile), () => SelectFile != null);
+        MoveUpperCommand = new(() => Player.PlayList.MoveUpperOne(SelectFile), () => SelectFile != null);
+        MoveLowerCommand = new(() => Player.PlayList.MoveLowerOne(SelectFile), () => SelectFile != null);
 
         canvasCtrl_Loaded = (s, e) =>
         {
             _FFTCanvasControl = s as CanvasControl;
             _FFTCanvasControl.Height = 500;
             _FFTCanvasControl.Width = Player.GetFFTCount() * 10;
-            _FFTCanvasControl.Measure(new Size(Player.GetFFTCount() * 10, _FFTCanvasControl.Height));
+            _FFTCanvasControl.Measure(new Windows.Foundation.Size(Player.GetFFTCount() * 10, _FFTCanvasControl.Height));
             _FFTCanvasControl.Arrange(new(0, 0, Player.GetFFTCount() * 10, _FFTCanvasControl.Height));
         };
         ListView_DoubleTapped = (s, e) =>
@@ -195,15 +198,47 @@ internal class MainWindowViewModel : ViewModelBase
         {
             CanvasDrawingSession drawer = e.DrawingSession;
             drawer.Clear(Colors.Transparent);
+            int fontHeight = 20;
 
             if (_FFTArray == null) return;
             for (int i = 0; i < _FFTArray.Length; ++i)
             {
                 double x = i * 10;
                 double height = _FFTArray[i] * 150;
-                drawer.FillRectangle(new Rect(x, _FFTCanvasControl.Height - height, 8, height), Colors.AliceBlue);
+                drawer.FillRectangle(new Rect(x, _FFTCanvasControl.Height - height - fontHeight, 8, height), Colors.AliceBlue);
             }
-        };    
+            int[] fftquartiles = Player.GetFFTQuartiles();
+            for (int i = 0; i < fftquartiles.Length; ++i)
+            {
+                drawer.DrawText(fftquartiles[i].ToString(),
+                                new System.Numerics.Vector2((float)(_FFTCanvasControl.Width / 4 * i), (float)(_FFTCanvasControl.Height - fontHeight)),
+                                Colors.AliceBlue,
+                                new()
+                                {
+                                    FontFamily = "Consolas",
+                                    FontSize = 12,
+                                    HorizontalAlignment = (i == 0 
+                                                           ? CanvasHorizontalAlignment.Left 
+                                                           : (i == fftquartiles.Length - 1) 
+                                                           ? CanvasHorizontalAlignment.Right 
+                                                           : CanvasHorizontalAlignment.Center)
+                                });
+            }
+        };
+        SelectionChanged = (s, e) =>
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                SelectFile = e.AddedItems[0] as MusicFile;
+            }
+            else
+            {
+                SelectFile = null;
+            }
+            DeleteCommand.RaiseCanExecuteChanged();
+            MoveLowerCommand.RaiseCanExecuteChanged();
+            MoveUpperCommand.RaiseCanExecuteChanged();
+        };
     }
 
     private void Player_PlayPauseChanged(object sender, PlayPauseChangedEventArgs e)

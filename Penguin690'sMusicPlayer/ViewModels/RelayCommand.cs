@@ -36,7 +36,7 @@ internal class RelayCommand : ICommand
 
     public void RaiseCanExecuteChanged()
     {
-        CanExecuteChanged.Invoke(this, EventArgs.Empty);
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 
@@ -68,6 +68,6 @@ internal class RelayCommand<T> : ICommand where T : class
 
     public void RaiseCanExecuteChanged()
     {
-        CanExecuteChanged.Invoke(this, EventArgs.Empty);
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -60,13 +60,19 @@ namespace Penguin690_sMusicPlayer.Models
                 StatusUpdate($"Add File: {musicFile.ShortPath}");
             }
         }
-
-        public ControlStatus CanGetPreviousAndNext(MusicFile file)
+        
+        public void MoveUpperOne(MusicFile musicFile)
         {
-            int index = IndexOf(file);
-            bool previous = index > 0 && index < Count;
-            bool next = index >= 0 && index < Count - 1;
-            return new(previous, false, next);
-        }     
+            int index = IndexOf(musicFile);
+            if (index <= 0 || index > Count - 1) return;
+            Move(index, index - 1);
+        }
+
+        public void MoveLowerOne(MusicFile musicFile)
+        {
+            int index = IndexOf(musicFile);
+            if (index < 0 || index > Count - 2) return;
+            Move(index, index + 1);
+        }
     }
 }

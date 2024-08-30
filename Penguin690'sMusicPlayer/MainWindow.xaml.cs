@@ -18,6 +18,7 @@ using Penguin690_sMusicPlayer.Models;
 using Penguin690_sMusicPlayer.ViewModels;
 using WinRT.Interop;
 using Microsoft.UI;
+using Windows.ApplicationModel.DataTransfer;
 using Microsoft.VisualBasic.Devices;
 using Windows.Devices.Input;
 using Microsoft.Graphics.Canvas;
@@ -47,7 +48,6 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         AppBarTitle.Loaded += AppBarTitle_Loaded;
         AppBarTitle.SizeChanged += AppBarTitle_SizeChanged;
-        canvasCtrl.Invalidate();
     }
 
     private void AppBarTitle_SizeChanged(object sender, SizeChangedEventArgs e)

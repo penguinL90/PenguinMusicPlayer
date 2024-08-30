@@ -300,6 +300,8 @@ internal class MusicPlayer : IStatusSender
 
     public int GetFFTCount() => fftwaver.selectFrequenciesCount;
 
+    public int[] GetFFTQuartiles() => fftwaver.FrequencyQuartiles;
+
     #endregion
 }
 

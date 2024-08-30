@@ -86,13 +86,13 @@
 
                     <MenuBarItem Title="Edit">
 
-                        <MenuFlyoutItem Text="Delete"/>
+                        <MenuFlyoutItem Text="Delete" Command="{x:Bind viewModel.DeleteCommand}"/>
 
                         <MenuFlyoutSeparator/>
 
-                        <MenuFlyoutItem Text="Move upper one"/>
+                        <MenuFlyoutItem Text="Move upper one" Command="{x:Bind viewModel.MoveUpperCommand}"/>
 
-                        <MenuFlyoutItem Text="Move lower one"/>
+                        <MenuFlyoutItem Text="Move lower one" Command="{x:Bind viewModel.MoveLowerCommand}"/>
 
                     </MenuBarItem>
 
@@ -130,8 +130,9 @@
                               CanReorderItems="True"
                               CanDragItems="True"
                               DoubleTapped="{x:Bind viewModel.ListView_DoubleTapped}"
-                              SelectedItem="{x:Bind viewModel.SelectFile, Mode=OneWay}"
-                              Margin="8">
+                              Margin="8"
+                              AllowDrop="True"
+                              SelectionChanged="{x:Bind viewModel.SelectionChanged}">
 
                         <ListView.ItemTemplate>
 

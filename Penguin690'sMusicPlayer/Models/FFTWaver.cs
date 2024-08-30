@@ -17,6 +17,7 @@ internal class FFTWaver : IDisposable, IStatusSender
     private readonly int maxFrequency = 2525;
     private readonly int minFrequency = 50;
     public readonly int selectFrequenciesCount = 100;
+    public readonly int[] FrequencyQuartiles;
     private int sampleCount = 2048;
     private int frequencySapn;
     private int bytePreSamplePreChannel;
@@ -44,7 +45,17 @@ internal class FFTWaver : IDisposable, IStatusSender
     public FFTWaver(Status status)
     {
         Status = status;
-        frequencySapn = (maxFrequency - minFrequency) / (selectFrequenciesCount - 1);
+        int frequencyRange = maxFrequency - minFrequency;
+        frequencySapn = frequencyRange / (selectFrequenciesCount - 1);
+        double Precentage = 1 / 100d;
+        FrequencyQuartiles = new int[5]
+        {
+            (int)(minFrequency + (frequencyRange * Precentage * 0)),
+            (int)(minFrequency + (frequencyRange * Precentage * 25)),
+            (int)(minFrequency + (frequencyRange * Precentage * 50)),
+            (int)(minFrequency + (frequencyRange * Precentage * 75)),
+            (int)(minFrequency + (frequencyRange * Precentage * 100)),
+        };
         window = Window.Hamming(sampleCount);
         StatusRegister();
     }
