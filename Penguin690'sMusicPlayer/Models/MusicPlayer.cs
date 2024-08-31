@@ -138,13 +138,14 @@ internal class MusicPlayer : IStatusSender
         {
             try
             {
+                StatusUpdate($"Loading: {file.ShortPath}");
                 Stop();
-                await Task.Run(() =>
-                {
-                    AudioFileReader = new(file);
-                    fftwaver.SetMusic(file);
-                    Player.Init(AudioFileReader);
-                });
+                Task t1 = Task.Run(() => AudioFileReader = new(file));
+                Task t2 = Task.Run(() => fftwaver.SetMusic(file));
+
+                await Task.WhenAll(t1, t2);
+                await Task.Run(() => Player.Init(AudioFileReader));
+
                 Play();
                 StatusUpdate($"Set audio: {file.ShortPath}");
                 OnMusicSet();
