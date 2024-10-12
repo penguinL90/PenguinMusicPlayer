@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2024 Penguin690 aka Person690
+Copyright (c) 2024 Penguin690 aka Person690 (GitHub: PenguinL90)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
